@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./P2P
+      dockerfile: Dockerfile
+    container_name: p2p-backend
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:5235
+      - ALLOWED_ORIGINS=http://localhost,http://thezbr.com,
+    networks:
+      - p2p-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: p2p-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./p2p-client/build:/usr/share/nginx/html
+    networks:
+      - p2p-network
+
+networks:
+  p2p-network:
+    driver: bridge

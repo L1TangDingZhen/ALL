@@ -1,0 +1,291 @@
+
+
+
+
+
+sudo yum update -y
+sudo yum install -y git
+
+
+# 更新包管理器
+sudo yum update -y
+
+# 安装必要的包
+sudo yum install -y yum-utils device-mapper-persistent-data lvm2
+
+# 添加Docker仓库
+sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+
+# 安装Docker
+sudo yum install -y docker-ce docker-ce-cli containerd.io
+
+# 启动Docker服务
+sudo systemctl start docker
+sudo systemctl enable docker
+
+# 将当前用户添加到docker组
+sudo usermod -aG docker $USER
+
+
+
+
+在云主机上加载镜像并部署
+bashCopy# SSH连接到云主机
+ssh ec2-user@3.104.77.160
+
+# 创建目录（如果不存在）
+mkdir -p ~/docker-images
+
+# 进入目录
+cd ~/docker-images
+
+# 加载Docker镜像
+sudo docker load -i box-backend.tar
+sudo docker load -i box-frontend.tar
+
+# 回到项目目录
+cd ~/box/BOX_P
+
+# 停止当前运行的容器
+sudo docker-compose down
+
+# 启动容器（使用本地加载的镜像）
+
+sudo docker-compose up -d
+
+
+
+
+
+
+
+
+nginx 403解决方案：
+
+本地构建前端
+# 确保你已经构建了前端
+cd box_show
+npm run build
+
+# 压缩构建文件以便传输
+cd build
+tar -czf build.tar.gz *
+
+
+将压缩包传输到虚拟机：
+
+
+
+在虚拟机上
+
+# 创建目录并解压文件
+mkdir -p box_show/build
+tar -xzf build.tar.gz -C box_show/build/
+chmod -R 755 box_show/build
+
+
+
+
+
+下面是完整的打包前后端镜像的命令流程：
+在本地打包前后端镜像
+1. 构建前端镜像
+
+# 进入前端项目目录
+cd box_show
+
+# 构建前端Docker镜像
+docker build -t box_p-frontend .
+
+
+2. 构建后端镜像
+# 进入后端项目目录
+cd ../box_back/box_back
+
+# 构建后端Docker镜像
+docker build -t box_p-backend .
+
+
+3. 将镜像保存为文件
+# 保存前端镜像
+docker save -o frontend-image.tar box_p-frontend
+
+# 保存后端镜像
+docker save -o backend-image.tar box_p-backend
+
+4. 将镜像文件传输到虚拟机
+
+
+5. 在虚拟机上加载镜像并运行容器
+# SSH到虚拟机
+ssh ec2-user@你的虚拟机IP
+
+# 进入项目目录
+cd BOX_P
+
+# 加载镜像
+docker load -i frontend-image.tar
+docker load -i backend-image.tar
+
+# 运行容器
+docker-compose down # 先停止旧容器
+docker-compose up -d # 启动新容器
+
+
+
+
+是的，您的理解是正确的。如果您更换了服务器实例，您将需要：
+
+为新实例重新申请Let's Encrypt证书
+更新新实例上的Nginx配置文件，使其指向正确的证书位置
+修改docker-compose.yml文件，确保正确挂载证书目录
+
+您的问题之前解决是因为：
+
+您成功获取了Let's Encrypt证书（替代了自签名证书）
+证书被正确配置到了Nginx中
+Let's Encrypt证书是被浏览器和其他客户端广泛信任的
+
+关于Let's Encrypt认证的工作方式：
+
+证书绑定到您的域名而不是服务器
+证书有效期通常为90天
+在不同服务器上使用相同域名时需要重新验证域名所有权
+
+如果您将来需要迁移到新实例，记得执行以下步骤：
+
+在新服务器上安装Docker和您的应用程序
+配置您的域名指向新服务器IP
+申请新的Let's Encrypt证书
+更新Nginx配置和docker-compose.yml文件
+启动您的服务
+
+这样就能确保新实例也能提供安全的HTTPS连接。
+
+
+
+使用 Let's Encrypt 获取免费的受信任证书（推荐）
+
+安装 certbot：
+sudo amazon-linux-extras install epel -y
+sudo yum install certbot -y
+
+获取证书（临时停止 Nginx）：
+docker-compose stop nginx
+sudo certbot certonly --standalone -d aimls.uk -d www.aimls.uk
+
+更新 Nginx 配置以使用新证书，编辑Nginx配置文件，：
+nano nginx/nginx.conf
+
+在配置文件中找到SSL证书部分，将：
+ssl_certificate /etc/ssl/private/nginx-selfsigned.crt;
+ssl_certificate_key /etc/ssl/private/nginx-selfsigned.key;
+替换为：
+ssl_certificate /etc/letsencrypt/live/aimls.uk/fullchain.pem;
+ssl_certificate_key /etc/letsencrypt/live/aimls.uk/privkey.pem;
+
+修改 docker-compose.yml 中的卷挂载，添加：
+
+nano docker-compose.yml
+
+在nginx服务的volumes部分添加新的挂载点：
+volumes:
+  - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+  - /etc/ssl/private:/etc/ssl/private:ro
+  - /etc/letsencrypt:/etc/letsencrypt:ro  # 添加这一行
+  - ./box_show/build:/usr/share/nginx/html
+
+重启Nginx服务：
+docker-compose up -d nginx
+
+
+
+
+
+
+修改前端后的部署流程
+
+本地构建前端静态文件：
+bashCopycd box_show
+npm run build  # 生成build目录
+tar -czvf build.tar.gz build/  # 将build目录打包
+
+上传到云主机：
+bashCopyscp build.tar.gz ec2-user@你的服务器IP:~/BOX_P/
+
+在云主机上解压并应用：
+bashCopyssh ec2-user@你的服务器IP
+cd ~/BOX_P
+tar -xzvf build.tar.gz
+docker-compose restart nginx  # 只重启nginx容器即可应用新的前端文件
+
+
+修改后端后的部署流程
+
+本地构建后端Docker镜像：
+bashCopycd box_back
+docker build -t box_p-backend .
+docker save box_p-backend > backend-image.tar
+
+上传到云主机：
+bashCopyscp backend-image.tar ec2-user@你的服务器IP:~/BOX_P/
+
+在云主机上加载镜像并重启服务：
+bashCopyssh ec2-user@你的服务器IP
+cd ~/BOX_P
+docker load < backend-image.tar
+docker-compose down
+docker-compose up -d
+
+
+如果同时修改了前端和后端
+你可以按顺序执行上述两个流程，或者创建一个综合脚本：
+bashCopy#!/bin/bash
+# 构建前端
+echo "构建前端..."
+cd box_show
+npm run build
+tar -czvf ../build.tar.gz build/
+cd ..
+
+# 构建后端镜像
+echo "构建后端镜像..."
+cd box_back
+docker build -t box_p-backend .
+cd ..
+docker save box_p-backend > backend-image.tar
+
+# 上传文件
+echo "上传文件到服务器..."
+scp build.tar.gz backend-image.tar ec2-user@你的服务器IP:~/BOX_P/
+
+# 远程执行命令
+echo "在服务器上部署..."
+ssh ec2-user@你的服务器IP "cd ~/BOX_P && tar -xzvf build.tar.gz && docker load < backend-image.tar && docker-compose down && docker-compose up -d"
+
+echo "部署完成!"
+
+
+
+方案1：设置正确的装饰器（最可靠的解决方案）
+进入容器修改代码：
+bashCopy# 进入容器
+docker exec -it $(docker ps | grep backend | awk '{print $1}') /bin/bash
+
+# 使用nano编辑视图文件
+nano /app/box_back/app/views.py
+找到login_user函数，完全替换成以下代码（确保添加所有必要的导入）：
+pythonCopy# 添加这些导入到文件顶部
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.permissions import AllowAny
+
+# 然后修改登录函数
+@csrf_exempt
+@api_view(['POST'])
+@authentication_classes([])  # 移除所有认证类
+@permission_classes([AllowAny])  # 允许任何请求
+def login_user(request):
+    serializer = UserLoginSerializer(data=request.data)
+
+然后保存文件（Ctrl+O, Enter, Ctrl+X），退出容器（输入exit）。
