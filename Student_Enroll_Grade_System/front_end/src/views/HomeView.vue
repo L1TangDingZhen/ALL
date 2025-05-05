@@ -9,8 +9,8 @@
       <button class="custom-button">Student_Enroll_Grade_System</button>
     </router-link>
 
-    <a href="https://github.com/L1TangDingZhen/Dotnet_Order_System" target="_blank">
-      <button class="custom-button">Dotnet Order System</button>
+    <a href="https://thezbr.com/box" target="_blank">
+      <button class="custom-button">3D Space Optimization Visualizer</button>
     </a>
 
     <p>{{ currentTime }}</p>
