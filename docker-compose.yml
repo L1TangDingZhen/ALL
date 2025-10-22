@@ -3,8 +3,9 @@ version: '3.8'
 services:
   # Box项目的后端服务
   box-backend:
-    image: box_p-backend
+    image: box-backend:latest
     container_name: box-backend
+    pull_policy: never
     restart: unless-stopped
     environment:
       - DEBUG=True  # 启用DEBUG以便查看错误信息
@@ -60,3 +61,4 @@ services:
 networks:
   app-network:
     driver: bridge
+
