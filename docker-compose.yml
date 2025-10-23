@@ -8,7 +8,7 @@ services:
     restart: unless-stopped
     environment:
       - DEBUG=True  # 启用DEBUG以便查看错误信息
-      - ALLOWED_HOSTS=localhost,127.0.0.1,box-backend,nginx,192.168.137.134
+      - ALLOWED_HOSTS=localhost,127.0.0.1,box-backend,nginx,192.168.137.134,thezbr.com,www.thezbr.com
       - APPEND_SLASH=False  # 关闭尾斜杠追加，适配前端请求
     networks:
       - app-network
@@ -32,7 +32,7 @@ services:
     restart: unless-stopped
     environment:
       - DEBUG=True
-      - ALLOWED_HOSTS=localhost,127.0.0.1,student-backend,nginx
+      - ALLOWED_HOSTS=localhost,127.0.0.1,box-backend,nginx,192.168.137.134,thezbr.com,www.thezbr.com
     networks:
       - app-network
 

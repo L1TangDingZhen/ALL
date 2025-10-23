@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-xu+de!4r0eb^o9chcp%-bn@ke-r0935n6-6um_qt%&y27p32oi
 DEBUG = True
 # DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = ['thezbr.com', 'www.thezbr.com', 'localhost', '127.0.0.1', 'box-backend']
 
 # 禁用URL末尾斜杠追加，适配前端请求
 APPEND_SLASH = False
