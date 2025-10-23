@@ -950,8 +950,12 @@ webRTCService.sendFile = function(file, onProgress) {
     };
     
     // Create a web worker for file processing
+    // Detect base path from the current URL pathname
+    // If URL is /p2p/something, extract /p2p as basePath
+    const currentPath = window.location.pathname;
+    const basePath = currentPath.startsWith('/p2p') ? '/p2p' : '';
     const workerBlob = new Blob([
-      `importScripts('${window.location.origin}/services/FileTransferWorker.js');`
+      `importScripts('${window.location.origin}${basePath}/services/FileTransferWorker.js');`
     ], { type: 'application/javascript' });
     
     const worker = new Worker(URL.createObjectURL(workerBlob));
