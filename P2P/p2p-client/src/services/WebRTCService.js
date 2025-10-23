@@ -903,20 +903,20 @@ webRTCService.sendFile = function(file, onProgress) {
     
     // Calculate optimal chunk size based on file type and network quality
     let chunkSize = 16384; // Default 16 KB chunks
-    
+
     // Adjust chunk size for video files
     const isVideo = file.type.startsWith('video/');
     const isLargeFile = file.size > 50 * 1024 * 1024; // 50MB
     const connectionQuality = this.connectionQualityData[peerId];
-    
+
     if (isVideo || isLargeFile) {
       // Optimize for larger chunks to improve throughput for large files
       // but not too large to cause UI freezing
-      chunkSize = 64 * 1024; // 64KB for videos and large files
-      
+      chunkSize = 128 * 1024; // 128KB for videos and large files (optimized for higher throughput)
+
       // If we have connection quality data and RTT is high, use smaller chunks
       if (connectionQuality && connectionQuality.rtt && connectionQuality.rtt > 200) {
-        chunkSize = 32 * 1024; // 32KB for high latency connections
+        chunkSize = 64 * 1024; // 64KB for high latency connections (increased from 32KB)
       }
     }
     
@@ -946,7 +946,7 @@ webRTCService.sendFile = function(file, onProgress) {
       worker: null,
       sendQueue: [],
       inFlightChunks: 0,
-      maxConcurrentChunks: 3 // Allow sending multiple chunks in parallel
+      maxConcurrentChunks: 8 // Allow sending multiple chunks in parallel (optimized for higher throughput)
     };
     
     // Create a web worker for file processing
@@ -1029,7 +1029,7 @@ webRTCService.processSendQueue = function(transferId) {
   if (!dataChannel || dataChannel.readyState !== 'open') return;
   
   // Check datachannel buffering to prevent overwhelming it
-  const isChannelCongested = dataChannel.bufferedAmount > 1024 * 1024; // 1MB threshold
+  const isChannelCongested = dataChannel.bufferedAmount > 5 * 1024 * 1024; // 5MB threshold (optimized for higher throughput)
   
   // Process chunks if channel is not congested and we have chunks to send
   while (!isChannelCongested && 
