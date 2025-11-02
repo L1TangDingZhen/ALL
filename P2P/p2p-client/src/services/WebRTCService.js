@@ -12,8 +12,9 @@ class WebRTCService {
     this.transferMode = 'server'; // Default to server relay
     this.connectionTimeouts = {}; // Track connection timeouts
     this.fileTransfers = {}; // Track ongoing file transfers
+    this.incomingFiles = {}; // Track incoming file transfers
     this.connectionQualityData = {}; // Track connection quality metrics
-    
+
     // Event handler callbacks
     this.eventHandlers = {
       onConnectionStateChanged: null,
@@ -24,7 +25,10 @@ class WebRTCService {
       // Add these to support component event names
       onDataChannelMessage: null,
       onDataChannelFile: null,
-      onDataChannelFileProgress: null
+      onDataChannelFileProgress: null,
+      onFileMetadataReceived: null,
+      onFileTransferProgress: null,
+      onFileReceived: null
     };
   }
 
@@ -288,9 +292,112 @@ class WebRTCService {
               }
             } else if (jsonData.type === 'file-metadata') {
               // Handle file metadata
-              console.log('File metadata received:', jsonData.fileName);
-              // Create file transfer state
-              // Further implementation would handle this
+              console.log('File metadata received:', jsonData.fileName, jsonData.fileSize, 'bytes');
+
+              // Initialize incoming file transfer state
+              this.incomingFiles[jsonData.transferId] = {
+                transferId: jsonData.transferId,
+                fileName: jsonData.fileName,
+                fileSize: jsonData.fileSize,
+                contentType: jsonData.contentType,
+                totalChunks: jsonData.totalChunks,
+                receivedChunks: [],
+                receivedChunkCount: 0,
+                peerId: peerId
+              };
+
+              console.log(`Initialized incoming file transfer: ${jsonData.transferId}, expecting ${jsonData.totalChunks} chunks`);
+
+              // Emit metadata received event
+              if (this.eventHandlers.onFileMetadataReceived) {
+                this.eventHandlers.onFileMetadataReceived({
+                  transferId: jsonData.transferId,
+                  fileName: jsonData.fileName,
+                  fileSize: jsonData.fileSize,
+                  contentType: jsonData.contentType,
+                  totalChunks: jsonData.totalChunks
+                });
+              }
+            } else if (jsonData.type === 'file-chunk') {
+              // Handle file chunk
+              const { transferId, chunkIndex, data } = jsonData;
+
+              if (!this.incomingFiles[transferId]) {
+                console.error('Received chunk for unknown transfer:', transferId);
+                return;
+              }
+
+              const transfer = this.incomingFiles[transferId];
+
+              // Convert base64 to ArrayBuffer if needed
+              let chunkData;
+              if (typeof data === 'string') {
+                // Base64 string
+                const binaryString = atob(data);
+                const bytes = new Uint8Array(binaryString.length);
+                for (let i = 0; i < binaryString.length; i++) {
+                  bytes[i] = binaryString.charCodeAt(i);
+                }
+                chunkData = bytes.buffer;
+              } else {
+                chunkData = data;
+              }
+
+              // Store chunk
+              transfer.receivedChunks[chunkIndex] = chunkData;
+              transfer.receivedChunkCount++;
+
+              // Calculate progress
+              const progress = Math.round((transfer.receivedChunkCount / transfer.totalChunks) * 100);
+              console.log(`File chunk ${chunkIndex + 1}/${transfer.totalChunks} received (${progress}%)`);
+
+              // Emit progress events
+              if (this.eventHandlers.onDataChannelFileProgress) {
+                this.eventHandlers.onDataChannelFileProgress(transferId, progress);
+              }
+              if (this.eventHandlers.onFileTransferProgress) {
+                this.eventHandlers.onFileTransferProgress(transferId, progress);
+              }
+            } else if (jsonData.type === 'file-complete') {
+              // Handle file transfer completion
+              const { transferId } = jsonData;
+
+              if (!this.incomingFiles[transferId]) {
+                console.error('Received completion for unknown transfer:', transferId);
+                return;
+              }
+
+              const transfer = this.incomingFiles[transferId];
+              console.log(`File transfer complete: ${transfer.fileName}, assembling file...`);
+
+              // Assemble file from chunks
+              const chunks = transfer.receivedChunks.filter(chunk => chunk !== undefined);
+              const blob = new Blob(chunks, { type: transfer.contentType || 'application/octet-stream' });
+              const url = URL.createObjectURL(blob);
+
+              const fileInfo = {
+                fileId: transferId,
+                fileName: transfer.fileName,
+                url: url,
+                blob: blob,
+                size: transfer.fileSize,
+                sender: transfer.peerId,
+                isVideo: transfer.contentType && transfer.contentType.startsWith('video/'),
+                contentType: transfer.contentType
+              };
+
+              // Emit file received events
+              if (this.eventHandlers.onDataChannelFile) {
+                this.eventHandlers.onDataChannelFile(fileInfo);
+              }
+              if (this.eventHandlers.onFileReceived) {
+                this.eventHandlers.onFileReceived(fileInfo);
+              }
+
+              console.log(`File ${transfer.fileName} ready for download`);
+
+              // Clean up
+              delete this.incomingFiles[transferId];
             }
           } catch (e) {
             // Not JSON, treat as plain text
@@ -302,10 +409,11 @@ class WebRTCService {
               });
             }
           }
-        } else {
-          // Binary message - likely file data
-          console.log('Binary data received, length:', event.data.byteLength);
-          // Implementation would handle file chunks
+        } else if (event.data instanceof ArrayBuffer || event.data instanceof Blob) {
+          // Binary message - could be file data
+          console.log('Binary data received, length:', event.data.byteLength || event.data.size);
+          // We're using JSON for file chunks now, so this shouldn't be reached
+          console.warn('Unexpected binary data received. File chunks should be sent as JSON.');
         }
       } catch (error) {
         console.error('Error processing received message:', error);
@@ -920,19 +1028,24 @@ webRTCService.sendFile = function(file, onProgress) {
       }
     }
     
+    // Calculate total chunks
+    const totalChunks = Math.ceil(file.size / chunkSize);
+
     // Send file metadata with information useful for streaming
     const metadataPacket = {
       type: 'file-metadata',
       transferId: transferId,
       fileName: file.name,
       fileType: file.type,
+      contentType: file.type,
       fileSize: file.size,
       chunkSize: chunkSize,
+      totalChunks: totalChunks,
       isStreamable: isVideo,
       timestamp: new Date().toISOString()
     };
-    
-    console.log(`Starting file transfer: ${file.name} (${file.size} bytes) with ${chunkSize}B chunks`);
+
+    console.log(`Starting file transfer: ${file.name} (${file.size} bytes) with ${chunkSize}B chunks, ${totalChunks} total chunks`);
     dataChannel.send(JSON.stringify(metadataPacket));
     
     // Store file transfer state
@@ -942,6 +1055,9 @@ webRTCService.sendFile = function(file, onProgress) {
       startTime: Date.now(),
       peerId: peerId,
       chunkSize: chunkSize,
+      totalChunks: totalChunks,
+      sentChunkCount: 0, // Track actually sent chunks for accurate progress
+      onProgress: onProgress, // Store callback for progress updates
       canceled: false,
       worker: null,
       sendQueue: [],
@@ -972,17 +1088,8 @@ webRTCService.sendFile = function(file, onProgress) {
       
       switch (action) {
         case 'progress_update':
-          // Update progress
-          this.fileTransfers[transferId].progress = data.progress;
-          if (onProgress) {
-            onProgress({
-              transferId,
-              fileName: file.name,
-              progress: data.progress,
-              sent: Math.floor((file.size * data.progress) / 100),
-              total: file.size
-            });
-          }
+          // Don't use worker progress directly, we'll calculate based on actual sends
+          // Just store for reference
           break;
           
         case 'chunk_ready':
@@ -990,6 +1097,7 @@ webRTCService.sendFile = function(file, onProgress) {
           this.fileTransfers[transferId].sendQueue.push({
             index: data.chunkIndex,
             data: data.chunk,
+            totalChunks: data.totalChunks,
             isFinal: data.isFinal
           });
           this.processSendQueue(transferId);
@@ -1044,20 +1152,46 @@ webRTCService.processSendQueue = function(transferId) {
     transfer.inFlightChunks++;
     
     try {
-      // For binary data
+      // Always send chunks as JSON with metadata
+      let chunkData = chunk.data;
+
+      // Convert ArrayBuffer to base64 if needed
       if (chunk.data instanceof ArrayBuffer) {
-        dataChannel.send(chunk.data);
-      } else {
-        // For base64 encoded data (should not happen in WebRTC mode)
-        const chunkPacket = {
-          type: 'file-chunk',
-          transferId: transferId,
-          chunkIndex: chunk.index,
-          data: chunk.data
-        };
-        dataChannel.send(JSON.stringify(chunkPacket));
+        const bytes = new Uint8Array(chunk.data);
+        let binary = '';
+        for (let i = 0; i < bytes.length; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
+        chunkData = btoa(binary);
       }
-      
+
+      const chunkPacket = {
+        type: 'file-chunk',
+        transferId: transferId,
+        chunkIndex: chunk.index,
+        totalChunks: chunk.totalChunks,
+        data: chunkData
+      };
+      dataChannel.send(JSON.stringify(chunkPacket));
+
+      // Update sent chunk count and progress after actually sending
+      transfer.sentChunkCount++;
+      const sendProgress = Math.round((transfer.sentChunkCount / transfer.totalChunks) * 100);
+      transfer.progress = sendProgress;
+
+      // Report progress to UI via callback
+      if (transfer.onProgress) {
+        transfer.onProgress({
+          transferId,
+          fileName: transfer.file.name,
+          progress: sendProgress,
+          sent: Math.floor((transfer.file.size * sendProgress) / 100),
+          total: transfer.file.size
+        });
+      }
+
+      console.log(`Sent chunk ${chunk.index + 1}/${transfer.totalChunks} (${sendProgress}%)`);
+
       // If this is the final chunk
       if (chunk.isFinal) {
         setTimeout(() => {

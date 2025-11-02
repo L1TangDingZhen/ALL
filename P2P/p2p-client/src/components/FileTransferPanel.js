@@ -40,10 +40,15 @@ function initFileTransferWorker() {
   }
 
   try {
+    // Detect base path from the current URL pathname
+    // If URL is /p2p/something, extract /p2p as basePath
+    const currentPath = window.location.pathname;
+    const basePath = currentPath.startsWith('/p2p') ? '/p2p' : '';
+
     const workerBlob = new Blob([
-      `importScripts('${window.location.origin}/services/FileTransferWorker.js');`
+      `importScripts('${window.location.origin}${basePath}/services/FileTransferWorker.js');`
     ], { type: 'application/javascript' });
-    
+
     window.fileTransferWorker = new Worker(URL.createObjectURL(workerBlob));
     console.log('File transfer worker initialized');
     return window.fileTransferWorker;
@@ -59,9 +64,10 @@ const FileTransferPanel = ({ userId, deviceId }) => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState('');
   const [transferType, setTransferType] = useState('server'); // 'server' or 'p2p'
-  
+
   // For incoming transfers
   const [incomingFiles, setIncomingFiles] = useState({});
+  const [incomingP2PFiles, setIncomingP2PFiles] = useState({}); // Track P2P file transfers in progress
   const [completedFiles, setCompletedFiles] = useState([]);
   const processedFileIdsRef = useRef(new Set());
 
@@ -242,21 +248,57 @@ const FileTransferPanel = ({ userId, deviceId }) => {
       processCompletedFile(fileId);
     };
 
-    // WebRTC P2P file reception handling
+    // WebRTC P2P file metadata received (start of transfer)
+    WebRTCService.on('onFileMetadataReceived', (metadata) => {
+      console.log('WebRTC P2P file metadata received:', metadata);
+      setIncomingP2PFiles(prev => ({
+        ...prev,
+        [metadata.transferId]: {
+          transferId: metadata.transferId,
+          fileName: metadata.fileName,
+          fileSize: metadata.fileSize,
+          contentType: metadata.contentType,
+          totalChunks: metadata.totalChunks,
+          progress: 0,
+          transferType: 'p2p'
+        }
+      }));
+    });
+
+    // WebRTC P2P file transfer progress
+    WebRTCService.on('onFileTransferProgress', (transferId, progress) => {
+      console.log(`WebRTC file transfer progress: ${transferId} - ${progress}%`);
+      setIncomingP2PFiles(prev => {
+        if (!prev[transferId]) return prev;
+        return {
+          ...prev,
+          [transferId]: {
+            ...prev[transferId],
+            progress: progress
+          }
+        };
+      });
+    });
+
+    // WebRTC P2P file reception complete
     WebRTCService.on('onFileReceived', (fileInfo) => {
       console.log('WebRTC P2P file received:', fileInfo);
+
+      // Remove from incoming P2P files
+      setIncomingP2PFiles(prev => {
+        const newIncoming = { ...prev };
+        delete newIncoming[fileInfo.fileId];
+        return newIncoming;
+      });
+
+      // Add to completed files
       setCompletedFiles(prev => [
-        ...prev, 
+        ...prev,
         {
           ...fileInfo,
           transferType: 'p2p' // Mark as P2P direct transfer
         }
       ]);
-    });
-
-    WebRTCService.on('onFileTransferProgress', (fileId, progress) => {
-      console.log(`WebRTC file transfer progress: ${fileId} - ${progress}%`);
-      // Could update P2P transfer progress here, but simplified version doesn't implement this
     });
 
     // Register event handlers for file transfer
@@ -269,10 +311,11 @@ const FileTransferPanel = ({ userId, deviceId }) => {
       SignalRService.on('onReceiveFileMetadata', null);
       SignalRService.on('onReceiveFileChunk', null);
       SignalRService.on('onFileTransferComplete', null);
+      WebRTCService.on('onFileMetadataReceived', null);
       WebRTCService.on('onFileReceived', null);
       WebRTCService.on('onFileTransferProgress', null);
       WebRTCService.on('onTransferModeChanged', null);
-      
+
       clearInterval(interval);
     };
   }, [transferType]); // Add transferType as dependency
@@ -319,22 +362,51 @@ const FileTransferPanel = ({ userId, deviceId }) => {
       if (transferType === 'p2p') {
         try {
           console.log('Trying to send file via WebRTC P2P');
-          const transferId = await WebRTCService.sendFile(selectedFile, (progress) => {
-            setUploadProgress(progress.progress);
+
+          // Create a promise that resolves when transfer completes
+          const transferPromise = new Promise((resolve, reject) => {
+            let lastProgress = 0;
+
+            const transferId = WebRTCService.sendFile(selectedFile, (progressInfo) => {
+              console.log('P2P transfer progress:', progressInfo.progress);
+              lastProgress = progressInfo.progress;
+              setUploadProgress(progressInfo.progress);
+
+              // When progress reaches 100%, resolve after a short delay
+              if (progressInfo.progress >= 100) {
+                setTimeout(() => {
+                  resolve(transferId);
+                }, 500);
+              }
+            });
+
+            if (!transferId) {
+              reject(new Error('Failed to start P2P transfer'));
+            }
+
+            // Fallback: if no progress after 30 seconds, consider it failed
+            setTimeout(() => {
+              if (lastProgress === 0) {
+                reject(new Error('Transfer timeout'));
+              }
+            }, 30000);
           });
-          
-          if (transferId) {
-            console.log(`WebRTC P2P file transfer started with ID: ${transferId}`);
-            // If P2P transfer is successful, we don't need to continue with server relay
-            setIsUploading(false);
-            setSelectedFile(null);
-            document.getElementById('file-input').value = null;
-            return;
-          } else {
-            console.log('WebRTC P2P file transfer failed, falling back to server relay');
-          }
+
+          // Wait for transfer to complete
+          const transferId = await transferPromise;
+          console.log(`WebRTC P2P file transfer completed: ${transferId}`);
+
+          // Clean up UI
+          setIsUploading(false);
+          setUploadProgress(0);
+          setSelectedFile(null);
+          document.getElementById('file-input').value = null;
+          return;
+
         } catch (p2pError) {
           console.error('WebRTC file transfer failed, falling back to server relay:', p2pError);
+          // Reset progress and continue to server relay fallback
+          setUploadProgress(0);
         }
       }
       
@@ -546,14 +618,17 @@ const FileTransferPanel = ({ userId, deviceId }) => {
         </div>
       )}
       
-      {/* Incoming file transfers */}
+      {/* Incoming file transfers (Server Relay) */}
       {Object.entries(incomingFiles).length > 0 && (
         <div className="mt-4">
-          <h5>Incoming Files</h5>
+          <h5>Incoming Files (Server Relay)</h5>
           {Object.entries(incomingFiles).map(([fileId, file]) => (
             <div key={fileId} className="border rounded p-2 mb-2">
               <div>
-                <p className="mb-1">Receiving: {file.fileName}</p>
+                <p className="mb-1">
+                  Receiving: {file.fileName}
+                  <Badge bg="warning" className="ms-2">Server</Badge>
+                </p>
               </div>
               <ProgressBar now={file.progress} label={`${file.progress}%`} />
               <p className="small mt-1">
@@ -563,7 +638,32 @@ const FileTransferPanel = ({ userId, deviceId }) => {
           ))}
         </div>
       )}
-      
+
+      {/* Incoming P2P file transfers */}
+      {Object.entries(incomingP2PFiles).length > 0 && (
+        <div className="mt-4">
+          <h5>Incoming Files (P2P Direct)</h5>
+          {Object.entries(incomingP2PFiles).map(([transferId, file]) => (
+            <div key={transferId} className="border rounded p-2 mb-2">
+              <div>
+                <p className="mb-1">
+                  Receiving: {file.fileName}
+                  <Badge bg="success" className="ms-2">P2P</Badge>
+                </p>
+              </div>
+              <ProgressBar
+                now={file.progress}
+                label={`${file.progress}%`}
+                variant="success"
+              />
+              <p className="small mt-1">
+                {formatFileSize(Math.floor(file.fileSize * file.progress / 100))} of {formatFileSize(file.fileSize)}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Completed file transfers */}
       {completedFiles.length > 0 && (
         <div className="mt-4">
