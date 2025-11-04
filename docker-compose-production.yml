@@ -8,12 +8,11 @@ services:
     pull_policy: never
     restart: unless-stopped
     environment:
-      # Production: Set DEBUG=False for security (disable detailed error pages)
-      # Development: Set DEBUG=True for debugging
+      # Production: DEBUG关闭，使用环境变量管理密钥
       - DEBUG=False
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-django-insecure-xu+de!4r0eb^o9chcp%-bn@ke-r0935n6-6um_qt%&y27p32oi}
-      - ALLOWED_HOSTS=localhost,127.0.0.1,box-backend,nginx,192.168.137.134,thezbr.com,www.thezbr.com
-      - APPEND_SLASH=False  # 关闭尾斜杠追加，适配前端请求
+      - ALLOWED_HOSTS=localhost,127.0.0.1,box-backend,nginx,thezbr.com,www.thezbr.com,3.107.17.208
+      - APPEND_SLASH=False
     networks:
       - app-network
 
@@ -25,21 +24,21 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:5235
-      - ALLOWED_ORIGINS=http://localhost
+      # Production: 允许生产域名 + 本地开发
+      - ALLOWED_ORIGINS=https://thezbr.com,https://www.thezbr.com,http://localhost:3000
     networks:
       - app-network
-      
+
   # Student项目的后端服务
   student-backend:
     image: student-backend
     container_name: student-backend
     restart: unless-stopped
     environment:
-      # Production: Set DEBUG=False for security (disable detailed error pages)
-      # Development: Set DEBUG=True for debugging
+      # Production: DEBUG关闭，使用环境变量管理密钥
       - DEBUG=False
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-django-insecure-@%babz@u@5_=&75(em@s+m1&v0v#r(b5eyo*z4jq#n1&uw+7g=}
-      - ALLOWED_HOSTS=localhost,127.0.0.1,box-backend,nginx,192.168.137.134,thezbr.com,www.thezbr.com
+      - ALLOWED_HOSTS=localhost,127.0.0.1,student-backend,nginx,thezbr.com,www.thezbr.com,3.107.17.208
       - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-super-secret-jwt-key-change-this-in-production-12345}
     networks:
       - app-network
@@ -47,17 +46,18 @@ services:
   # Nginx服务 - 处理所有应用的路由
   nginx:
     image: nginx:alpine
-    #pull_policy: never  # 添加这一行，防止自动拉取
     container_name: integrated-nginx
     restart: unless-stopped
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
       - ./box/box_show/build:/usr/share/nginx/html/box
       - ./P2P/p2p-client/build:/usr/share/nginx/html/p2p
       - ./Student_Enroll_Grade_System/front_end/dist:/usr/share/nginx/html
       - ./test.html:/usr/share/nginx/html/test.html
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - box-backend
       - p2p-backend
@@ -68,5 +68,3 @@ services:
 networks:
   app-network:
     driver: bridge
-
-

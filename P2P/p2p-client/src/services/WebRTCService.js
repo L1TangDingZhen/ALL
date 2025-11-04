@@ -1,28 +1,48 @@
 import SignalRService from './SignalRService';
 
+/**
+ * WebRTC Service for Peer-to-Peer File Transfer
+ *
+ * Manages WebRTC peer connections and data channels for direct device-to-device
+ * file transfers. Uses SignalR as the signaling channel for connection setup.
+ *
+ * Key Features:
+ * - Direct P2P connections using WebRTC Data Channels
+ * - Automatic ICE candidate exchange for NAT traversal
+ * - Chunked file transfer with progress tracking
+ * - Connection quality monitoring
+ * - Automatic reconnection on failure
+ *
+ * WebRTC Flow:
+ * 1. Create RTCPeerConnection with STUN servers
+ * 2. Exchange SDP offer/answer via SignalR
+ * 3. Exchange ICE candidates for NAT traversal
+ * 4. Establish data channel for file transfer
+ * 5. Transfer files in chunks (no server storage)
+ */
 class WebRTCService {
   constructor() {
-    this.connections = {}; // Map of peer connections by device ID
-    this.dataChannels = {}; // Map of data channels by device ID
+    this.connections = {}; // Map of RTCPeerConnection objects by device ID
+    this.dataChannels = {}; // Map of RTCDataChannel objects for file transfer
     this.userId = null;
     this.deviceId = null;
-    this.iceServers = null;
+    this.iceServers = null; // STUN/TURN server configuration
     this.isInitialized = false;
-    this.pendingIceCandidates = {};
-    this.transferMode = 'server'; // Default to server relay
-    this.connectionTimeouts = {}; // Track connection timeouts
-    this.fileTransfers = {}; // Track ongoing file transfers
-    this.incomingFiles = {}; // Track incoming file transfers
-    this.connectionQualityData = {}; // Track connection quality metrics
+    this.pendingIceCandidates = {}; // Queue ICE candidates until connection ready
+    this.transferMode = 'server'; // 'p2p' when WebRTC connected, 'server' as fallback
+    this.connectionTimeouts = {}; // Track connection establishment timeouts
+    this.fileTransfers = {}; // Track outgoing file transfer state
+    this.incomingFiles = {}; // Track incoming file reception state
+    this.connectionQualityData = {}; // Monitor latency, packet loss, bandwidth
 
-    // Event handler callbacks
+    // Event handler callbacks for UI updates
     this.eventHandlers = {
       onConnectionStateChanged: null,
       onDataChannelOpen: null,
       onDataChannelClose: null,
       onDataChannelError: null,
       onTransferModeChanged: null,
-      // Add these to support component event names
+      // File transfer events
       onDataChannelMessage: null,
       onDataChannelFile: null,
       onDataChannelFileProgress: null,

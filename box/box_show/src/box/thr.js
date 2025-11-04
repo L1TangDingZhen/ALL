@@ -1,10 +1,30 @@
+/**
+ * 3D Box Placement Visualization Component
+ *
+ * Interactive 3D visualization for bin packing algorithm results using Three.js.
+ * Renders a 3D scene where users can visualize how items are placed in a container.
+ *
+ * Features:
+ * - Real-time 3D rendering with WebGL (Three.js)
+ * - Interactive camera controls (rotate, zoom, pan)
+ * - Layer-by-layer view mode for complex packings
+ * - Custom item placement with collision validation
+ * - Fullscreen support with mobile touch controls
+ * - Grid and axis helpers for spatial reference
+ *
+ * Performance optimizations:
+ * - RAF (requestAnimationFrame) for smooth 60fps rendering
+ * - Geometry/material reuse to reduce memory
+ * - Conditional rendering based on view mode
+ */
+
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as THREE from 'three';
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
 
 // MUI Components
-import { 
+import {
     Accordion,
     AccordionSummary,
     AccordionDetails,

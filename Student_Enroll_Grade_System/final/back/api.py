@@ -1,3 +1,19 @@
+"""
+Student Enrollment & Grade Management System - REST API
+
+Implements RESTful APIs for course enrollment and grade management using
+Django Ninja framework with JWT authentication and role-based access control.
+
+Key Features:
+- JWT token-based authentication
+- Role-based permissions (Student, Teacher, Admin)
+- Course CRUD operations with enrollment capacity management
+- Grade tracking and reporting
+- Auto-generated OpenAPI/Swagger documentation
+
+Tech Stack: Django Ninja + JWT + MySQL
+"""
+
 from datetime import date, datetime, timedelta
 from django.utils import timezone
 from ninja import NinjaAPI, Router
