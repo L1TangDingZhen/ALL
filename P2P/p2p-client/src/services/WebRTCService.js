@@ -806,6 +806,7 @@ class WebRTCService {
   async testStunConnectivity() {
     return new Promise(resolve => {
       let resolved = false;
+      let pc;
       const done = (result) => {
         if (resolved) return;
         resolved = true;
@@ -814,7 +815,7 @@ class WebRTCService {
       };
 
       try {
-        const pc = new RTCPeerConnection({
+        pc = new RTCPeerConnection({
           iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
         });
 
@@ -1049,7 +1050,7 @@ webRTCService.sendFile = function(file, onProgress) {
       fileSize: file.size,
       chunkSize: chunkSize,
       totalChunks: totalChunks,
-      isStreamable: isVideo,
+      isStreamable: file.type.startsWith('video/'),
       timestamp: new Date().toISOString()
     };
 
