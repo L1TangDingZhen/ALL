@@ -101,52 +101,45 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
 
-      # 确保 EC2 上目录存在
-      - name: Ensure ~/ONE directory exists on EC2
+      # 上传 docker-compose 和 .env 文件
+      - name: Upload config files to EC2
+        env:
+          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
         run: |
-          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "mkdir -p ~/ONE"
-
-      # 同步 docker-compose 配置文件到 EC2
-      - name: Sync config files to EC2
-        run: |
+          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} 'mkdir -p ~/ONE'
           scp docker-compose-production.yml \
             ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/ONE/docker-compose-production.yml
-
-      # 把 GitHub Secrets 写入 EC2 的 .env 文件（docker-compose 自动读取）
-      - name: Write .env file on EC2
-        run: |
           printf 'DJANGO_SECRET_KEY=%s\nJWT_SECRET_KEY=%s\n' \
-            '${{ secrets.DJANGO_SECRET_KEY }}' \
-            '${{ secrets.JWT_SECRET_KEY }}' > /tmp/prod.env
+            "${DJANGO_SECRET_KEY}" "${JWT_SECRET_KEY}" > /tmp/prod.env
           scp /tmp/prod.env ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/ONE/.env
-          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "chmod 600 ~/ONE/.env"
           rm /tmp/prod.env
 
       # 拉取新镜像 → 重新打标签 → 重启容器
       - name: Pull images and restart containers
         run: |
-          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "
-            set -e
+          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} bash -s << 'ENDSSH'
+          set -e
 
-            echo '==> Docker Hub 登录'
-            echo '${{ secrets.DOCKERHUB_TOKEN }}' | docker login -u '${{ secrets.DOCKERHUB_USERNAME }}' --password-stdin
+          echo '==> Docker Hub 登录'
+          echo '${{ secrets.DOCKERHUB_TOKEN }}' | docker login -u '${{ secrets.DOCKERHUB_USERNAME }}' --password-stdin
 
-            echo '==> 拉取最新镜像'
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/box-backend:latest
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/p2p-backend:latest
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/student-backend:latest
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/integrated-nginx:latest
+          echo '==> 拉取最新镜像'
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/box-backend:latest
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/p2p-backend:latest
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/student-backend:latest
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/integrated-nginx:latest
 
-            echo '==> 重新打本地标签'
-            docker tag ${{ secrets.DOCKERHUB_USERNAME }}/box-backend:latest box-backend:latest
-            docker tag ${{ secrets.DOCKERHUB_USERNAME }}/p2p-backend:latest p2p-backend:latest
-            docker tag ${{ secrets.DOCKERHUB_USERNAME }}/student-backend:latest student-backend:latest
-            docker tag ${{ secrets.DOCKERHUB_USERNAME }}/integrated-nginx:latest integrated-nginx:latest
+          echo '==> 重新打本地标签'
+          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/box-backend:latest box-backend:latest
+          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/p2p-backend:latest p2p-backend:latest
+          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/student-backend:latest student-backend:latest
+          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/integrated-nginx:latest integrated-nginx:latest
 
-            echo '==> 重启所有服务'
-            cd ~/ONE
-            docker compose -f docker-compose-production.yml up -d --force-recreate
+          echo '==> 重启所有服务'
+          cd ~/ONE
+          docker compose -f docker-compose-production.yml up -d --force-recreate
 
-            echo '==> 清理旧镜像'
-            docker image prune -f
-          "
+          echo '==> 清理旧镜像'
+          docker image prune -f
+          ENDSSH
