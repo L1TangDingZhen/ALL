@@ -1,0 +1,41 @@
+# Git
+.git
+.gitignore
+
+# CI/CD
+.github
+
+# Node 依赖（各前端目录）
+**/node_modules
+
+# 前端构建产物（在 nginx Dockerfile 里重新构建）
+box/box_show/build
+P2P/p2p-client/build
+Student_Enroll_Grade_System/front_end/dist
+
+# Python
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/venv
+**/.venv
+**/staticfiles
+**/mediafiles
+
+# .NET
+**/bin
+**/obj
+
+# 本地开发文件
+.env
+.env.local
+*.vs/
+.vscode/
+.claude/
+.idea/
+
+# 个人文件
+BUG.txt
+CLAUDE.md
+*.tar
+*.deb

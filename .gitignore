@@ -1,10 +1,64 @@
+# 只用 docker-compose-production.yml，本地开发用的 docker-compose.yml 不提交
+docker-compose.yml
+
+# Archives
 *.tar
+*.tar.gz
 *.deb
-*.tar
+*.zip
 
-
-*.vs/
-*.claude/
+# IDE / editor folders
+.vs/
+.vscode/
+.claude/
+.idea/
 
 # Personal notes
 BUG.txt
+CLAUDE.md
+
+# ─── Python ───────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+
+# Django collected static / media
+staticfiles/
+mediafiles/
+
+# ─── Node ─────────────────────────────────────────────────────
+node_modules/
+
+# Frontend build artifacts (built in CI, uploaded to server via rsync)
+box/box_show/build/
+P2P/p2p-client/build/
+Student_Enroll_Grade_System/front_end/dist/
+
+# ─── .NET ─────────────────────────────────────────────────────
+bin/
+obj/
+*.user
+*.suo
+
+# ─── Environment / secrets ────────────────────────────────────
+.env
+.env.local
+.env.*.local
+# Keep .env.production (no real secrets, just API path config)
+!**/.env.production
+
+# ─── OS ───────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db

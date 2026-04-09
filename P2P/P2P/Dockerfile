@@ -16,9 +16,8 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
-# 设置环境变量
+# 设置环境变量（ALLOWED_ORIGINS 由 docker-compose 注入）
 ENV ASPNETCORE_ENVIRONMENT=Production
 ENV ASPNETCORE_URLS=http://+:5235
-ENV ALLOWED_ORIGINS=http://localhost,http://thezbr.com,http://54.253.174.18
 
 ENTRYPOINT ["dotnet", "P2P.dll"]

@@ -1,0 +1,153 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  # ─────────────────────────────────────────────────────────────
+  # 4个镜像并行构建
+  # ─────────────────────────────────────────────────────────────
+  build-box-backend:
+    name: Build Box Backend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v5
+        with:
+          context: ./box/box_back/box_back
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/box-backend:latest
+
+  build-p2p-backend:
+    name: Build P2P Backend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v5
+        with:
+          context: ./P2P/P2P
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/p2p-backend:latest
+
+  build-student-backend:
+    name: Build Student Backend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v5
+        with:
+          context: ./Student_Enroll_Grade_System/final
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/student-backend:latest
+
+  build-integrated-nginx:
+    name: Build Integrated Nginx (3 frontends)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # 构建上下文是仓库根目录，Dockerfile 在 nginx/ 下
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./nginx/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/integrated-nginx:latest
+
+  # ─────────────────────────────────────────────────────────────
+  # 部署：等所有镜像构建完成后执行
+  # ─────────────────────────────────────────────────────────────
+  deploy:
+    name: Deploy to EC2
+    needs:
+      - build-box-backend
+      - build-p2p-backend
+      - build-student-backend
+      - build-integrated-nginx
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+
+      # 确保 EC2 上目录存在
+      - name: Ensure ~/ONE directory exists on EC2
+        run: |
+          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "mkdir -p ~/ONE"
+
+      # 同步 docker-compose 配置文件到 EC2
+      - name: Sync config files to EC2
+        run: |
+          rsync -avz \
+            docker-compose-production.yml \
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/ONE/
+
+      # 把 GitHub Secrets 写入 EC2 的 .env 文件（docker-compose 自动读取）
+      - name: Write .env file on EC2
+        run: |
+          printf 'DJANGO_SECRET_KEY=%s\nJWT_SECRET_KEY=%s\n' \
+            '${{ secrets.DJANGO_SECRET_KEY }}' \
+            '${{ secrets.JWT_SECRET_KEY }}' > /tmp/prod.env
+          scp /tmp/prod.env ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/ONE/.env
+          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "chmod 600 ~/ONE/.env"
+          rm /tmp/prod.env
+
+      # 拉取新镜像 → 重新打标签 → 重启容器
+      - name: Pull images and restart containers
+        run: |
+          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "
+            set -e
+
+            echo '==> Docker Hub 登录'
+            echo '${{ secrets.DOCKERHUB_TOKEN }}' | docker login -u '${{ secrets.DOCKERHUB_USERNAME }}' --password-stdin
+
+            echo '==> 拉取最新镜像'
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/box-backend:latest
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/p2p-backend:latest
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/student-backend:latest
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/integrated-nginx:latest
+
+            echo '==> 重新打本地标签'
+            docker tag ${{ secrets.DOCKERHUB_USERNAME }}/box-backend:latest box-backend:latest
+            docker tag ${{ secrets.DOCKERHUB_USERNAME }}/p2p-backend:latest p2p-backend:latest
+            docker tag ${{ secrets.DOCKERHUB_USERNAME }}/student-backend:latest student-backend:latest
+            docker tag ${{ secrets.DOCKERHUB_USERNAME }}/integrated-nginx:latest integrated-nginx:latest
+
+            echo '==> 重启所有服务'
+            cd ~/ONE
+            docker compose -f docker-compose-production.yml up -d --force-recreate
+
+            echo '==> 清理旧镜像'
+            docker image prune -f
+          "
