@@ -1,0 +1,281 @@
+[
+  {
+    "model": "back.newuser",
+    "pk": "001",
+    "fields": {
+      "password": "pbkdf2_sha256$720000$gbr5js7QoYAmtxZ5Z9YUyo$NtAhWBSCkr3ZEAPYpt3HTjN1cQMIicx4/VZn8PDl5BM=",
+      "last_login": "2024-04-23T12:05:07.752Z",
+      "is_superuser": true,
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2024-04-23T12:04:09.318Z",
+      "username": "admin",
+      "is_teacher": false,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "back.newuser",
+    "pk": "111",
+    "fields": {
+      "password": "pbkdf2_sha256$720000$q4lwCcTiIIN2x9NdnewDgY$WNWNCRK9wDYz8esTcsVU5UNlKwQ7dS5Agqj+3nscrU0=",
+      "last_login": null,
+      "is_superuser": false,
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-04-23T12:05:53.987Z",
+      "username": "111",
+      "is_teacher": false,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "back.newuser",
+    "pk": "333",
+    "fields": {
+      "password": "pbkdf2_sha256$720000$t87Jq80mb7JrviBL84XlWm$3gFi2gsF9a5h/F8hnzE85wfwPU7KdvSDo1Lnh6ywMyQ=",
+      "last_login": null,
+      "is_superuser": false,
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-04-23T13:14:05.534Z",
+      "username": "333",
+      "is_teacher": true,
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "back.course",
+    "pk": "",
+    "fields": {
+      "course_name": "Flying",
+      "teacher": "333",
+      "available": 2
+    }
+  },
+  {
+    "model": "back.course",
+    "pk": "001",
+    "fields": {
+      "course_name": "Math",
+      "teacher": "001",
+      "available": null
+    }
+  },
+  {
+    "model": "back.course",
+    "pk": "002",
+    "fields": {
+      "course_name": "Operating System",
+      "teacher": "333",
+      "available": null
+    }
+  },
+  {
+    "model": "back.course",
+    "pk": "003",
+    "fields": {
+      "course_name": "ART",
+      "teacher": "333",
+      "available": 6
+    }
+  },
+  {
+    "model": "back.course",
+    "pk": "004",
+    "fields": {
+      "course_name": "PE",
+      "teacher": "333",
+      "available": 5
+    }
+  },
+  {
+    "model": "back.course",
+    "pk": "005",
+    "fields": {
+      "course_name": "Dance",
+      "teacher": "333",
+      "available": 1
+    }
+  },
+  {
+    "model": "back.course",
+    "pk": "006",
+    "fields": {
+      "course_name": "Hiking",
+      "teacher": "333",
+      "available": 4
+    }
+  },
+  {
+    "model": "back.course",
+    "pk": "007",
+    "fields": {
+      "course_name": "Driving ",
+      "teacher": "333",
+      "available": 3
+    }
+  },
+  {
+    "model": "back.available",
+    "pk": 1,
+    "fields": {
+      "year": 2025,
+      "semester": "Trimester2",
+      "capacity": 30,
+      "registration_deadline": "2025-12-31"
+    }
+  },
+  {
+    "model": "back.available",
+    "pk": 2,
+    "fields": {
+      "year": 2025,
+      "semester": "Trimester3",
+      "capacity": 12,
+      "registration_deadline": "2025-12-31"
+    }
+  },
+  {
+    "model": "back.available",
+    "pk": 3,
+    "fields": {
+      "year": 2025,
+      "semester": "Trimester3",
+      "capacity": 6,
+      "registration_deadline": "2025-12-31"
+    }
+  },
+  {
+    "model": "back.available",
+    "pk": 4,
+    "fields": {
+      "year": 2025,
+      "semester": "Trimester3",
+      "capacity": 61,
+      "registration_deadline": "2025-12-31"
+    }
+  },
+  {
+    "model": "back.available",
+    "pk": 5,
+    "fields": {
+      "year": 2025,
+      "semester": "Trimester3",
+      "capacity": 20,
+      "registration_deadline": "2025-12-31"
+    }
+  },
+  {
+    "model": "back.available",
+    "pk": 6,
+    "fields": {
+      "year": 2025,
+      "semester": "Trimester3",
+      "capacity": 15,
+      "registration_deadline": "2025-12-31"
+    }
+  },
+  {
+    "model": "back.enrollment",
+    "pk": 10,
+    "fields": {
+      "course": "005",
+      "student": "111",
+      "available": 1,
+      "semester": "Trimester2"
+    }
+  },
+  {
+    "model": "back.enrollment",
+    "pk": 11,
+    "fields": {
+      "course": "006",
+      "student": "111",
+      "available": 4,
+      "semester": "Trimester3"
+    }
+  },
+  {
+    "model": "back.enrollment",
+    "pk": 12,
+    "fields": {
+      "course": "007",
+      "student": "111",
+      "available": 3,
+      "semester": "Trimester3"
+    }
+  },
+  {
+    "model": "back.enrollment",
+    "pk": 13,
+    "fields": {
+      "course": "004",
+      "student": "111",
+      "available": 5,
+      "semester": "Trimester3"
+    }
+  },
+  {
+    "model": "back.enrollment",
+    "pk": 14,
+    "fields": {
+      "course": "003",
+      "student": "111",
+      "available": 6,
+      "semester": "Trimester3"
+    }
+  },
+  {
+    "model": "back.grade",
+    "pk": 1,
+    "fields": {
+      "enroll": 12,
+      "score": 23.0
+    }
+  },
+  {
+    "model": "back.grade",
+    "pk": 2,
+    "fields": {
+      "enroll": 11,
+      "score": 2.0
+    }
+  },
+  {
+    "model": "back.grade",
+    "pk": 3,
+    "fields": {
+      "enroll": 10,
+      "score": 33.0
+    }
+  },
+  {
+    "model": "back.grade",
+    "pk": 4,
+    "fields": {
+      "enroll": 14,
+      "score": 19.0
+    }
+  },
+  {
+    "model": "back.grade",
+    "pk": 5,
+    "fields": {
+      "enroll": 13,
+      "score": 44.0
+    }
+  }
+]

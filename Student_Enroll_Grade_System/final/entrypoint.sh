@@ -14,7 +14,7 @@ from back.models import newuser
 if newuser.objects.count() == 0:
     print('No users found, loading seed data...')
     import django.core.management
-    django.core.management.call_command('loaddata', 'data.json', verbosity=1)
+    django.core.management.call_command('loaddata', 'seed.json', verbosity=1)
     print('Seed data loaded successfully.')
 else:
     print(f'Database already has {newuser.objects.count()} users, skipping seed.')
