@@ -50,7 +50,7 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /etc/ssl/cloudflare:/etc/ssl/cloudflare:ro
     depends_on:
       - box-backend
       - p2p-backend

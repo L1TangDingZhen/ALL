@@ -37,8 +37,8 @@ RUN npm run build
 # ── Stage 4: 最终 nginx 镜像 ──────────────────────────────────
 FROM nginx:alpine
 
-# nginx 配置（HTTP，SSL 证书配好后可切换到 nginx-secure.conf）
-COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
+# nginx 配置（HTTPS + Cloudflare Origin Certificate）
+COPY nginx/nginx-secure.conf /etc/nginx/conf.d/default.conf
 
 # 三个前端构建产物
 COPY --from=box-builder     /app/build  /usr/share/nginx/html/box
@@ -48,5 +48,5 @@ COPY --from=student-builder /app/dist   /usr/share/nginx/html
 # 测试页面
 COPY test.html /usr/share/nginx/html/test.html
 
-EXPOSE 80
+EXPOSE 80 443
 CMD ["nginx", "-g", "daemon off;"]
