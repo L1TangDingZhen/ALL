@@ -37,17 +37,18 @@ ENV DJANGO_SETTINGS_MODULE=temp_settings
 # 收集静态文件
 RUN python manage.py collectstatic --noinput
 
-# 初始化数据库
-RUN python manage.py migrate --noinput
-
 # 恢复原始设置模块
 ENV DJANGO_SETTINGS_MODULE=final.settings
+
+# 复制启动脚本（在容器启动时执行 migrate，而非构建时）
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
 # 暴露端口
 EXPOSE 8000
 
-# 启动命令 - 使用gunicorn替代runserver
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120", "final.wsgi:application"]
+# 使用 entrypoint 脚本启动（先 migrate 再启动 gunicorn）
+ENTRYPOINT ["/app/entrypoint.sh"]
 
 
 

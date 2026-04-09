@@ -17,6 +17,25 @@
 
     <!-- Project Cards -->
     <section class="projects">
+      <router-link to="/spin" class="project-card">
+        <div class="card-glow glow-orange"></div>
+        <div class="card-content">
+          <div class="card-header">
+            <span class="card-tag tag-orange">Vue 3</span>
+            <svg class="card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M7 17L17 7M17 7H7M17 7V17"/>
+            </svg>
+          </div>
+          <h2>Food Selector</h2>
+          <p>A fun spinning wheel that randomly picks your next meal. Let fate decide what you eat today.</p>
+          <div class="card-tech">
+            <span>Vue 3</span>
+            <span>CSS Animation</span>
+            <span>Randomizer</span>
+          </div>
+        </div>
+      </router-link>
+
       <router-link to="/login" class="project-card">
         <div class="card-glow glow-blue"></div>
         <div class="card-content">
@@ -53,26 +72,6 @@
             <span>Three.js</span>
             <span>Material UI</span>
             <span>Django</span>
-          </div>
-        </div>
-      </a>
-
-      <a href="/p2p/" class="project-card">
-        <div class="card-glow glow-green"></div>
-        <div class="card-content">
-          <div class="card-header">
-            <span class="card-tag tag-green">React + .NET</span>
-            <svg class="card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M7 17L17 7M17 7H7M17 7V17"/>
-            </svg>
-          </div>
-          <h2>P2P File Transfer</h2>
-          <p>Peer-to-peer file sharing with WebRTC, real-time SignalR connections, and chunked transfer.</p>
-          <div class="card-tech">
-            <span>React</span>
-            <span>SignalR</span>
-            <span>WebRTC</span>
-            <span>.NET 8</span>
           </div>
         </div>
       </a>
@@ -238,6 +237,9 @@ export default defineComponent({
 .glow-green {
   background: radial-gradient(circle at 50% 50%, rgba(16,185,129,0.06) 0%, transparent 60%);
 }
+.glow-orange {
+  background: radial-gradient(circle at 50% 50%, rgba(249,115,22,0.06) 0%, transparent 60%);
+}
 
 .card-content {
   position: relative;
@@ -270,6 +272,10 @@ export default defineComponent({
 .tag-green {
   background: rgba(16,185,129,0.12);
   color: #34d399;
+}
+.tag-orange {
+  background: rgba(249,115,22,0.12);
+  color: #fb923c;
 }
 
 .card-arrow {
