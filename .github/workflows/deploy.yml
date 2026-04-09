@@ -94,52 +94,57 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Configure SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+      # 上传 docker-compose 文件
+      - name: Upload docker-compose to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: docker-compose-production.yml
+          target: ~/ONE/
+          strip_components: 0
 
-      # 上传 docker-compose 和 .env 文件
-      - name: Upload config files to EC2
+      # 部署：写 .env，拉取镜像，重启容器
+      - name: Deploy on EC2
+        uses: appleboy/ssh-action@v1.0.3
         env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
           DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
           JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
-        run: |
-          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} 'mkdir -p ~/ONE'
-          scp docker-compose-production.yml \
-            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/ONE/docker-compose-production.yml
-          printf 'DJANGO_SECRET_KEY=%s\nJWT_SECRET_KEY=%s\n' \
-            "${DJANGO_SECRET_KEY}" "${JWT_SECRET_KEY}" > /tmp/prod.env
-          scp /tmp/prod.env ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/ONE/.env
-          rm /tmp/prod.env
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: DOCKERHUB_USERNAME,DOCKERHUB_TOKEN,DJANGO_SECRET_KEY,JWT_SECRET_KEY
+          script: |
+            set -e
+            mkdir -p ~/ONE
 
-      # 拉取新镜像 → 重新打标签 → 重启容器
-      - name: Pull images and restart containers
-        run: |
-          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} bash -s << 'ENDSSH'
-          set -e
+            echo "==> 写入 .env 文件"
+            printf 'DJANGO_SECRET_KEY=%s\nJWT_SECRET_KEY=%s\n' \
+              "$DJANGO_SECRET_KEY" "$JWT_SECRET_KEY" > ~/ONE/.env
+            chmod 600 ~/ONE/.env
 
-          echo '==> Docker Hub 登录'
-          echo '${{ secrets.DOCKERHUB_TOKEN }}' | docker login -u '${{ secrets.DOCKERHUB_USERNAME }}' --password-stdin
+            echo "==> Docker Hub 登录"
+            echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
 
-          echo '==> 拉取最新镜像'
-          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/box-backend:latest
-          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/p2p-backend:latest
-          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/student-backend:latest
-          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/integrated-nginx:latest
+            echo "==> 拉取最新镜像"
+            docker pull "$DOCKERHUB_USERNAME"/box-backend:latest
+            docker pull "$DOCKERHUB_USERNAME"/p2p-backend:latest
+            docker pull "$DOCKERHUB_USERNAME"/student-backend:latest
+            docker pull "$DOCKERHUB_USERNAME"/integrated-nginx:latest
 
-          echo '==> 重新打本地标签'
-          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/box-backend:latest box-backend:latest
-          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/p2p-backend:latest p2p-backend:latest
-          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/student-backend:latest student-backend:latest
-          docker tag ${{ secrets.DOCKERHUB_USERNAME }}/integrated-nginx:latest integrated-nginx:latest
+            echo "==> 重新打本地标签"
+            docker tag "$DOCKERHUB_USERNAME"/box-backend:latest box-backend:latest
+            docker tag "$DOCKERHUB_USERNAME"/p2p-backend:latest p2p-backend:latest
+            docker tag "$DOCKERHUB_USERNAME"/student-backend:latest student-backend:latest
+            docker tag "$DOCKERHUB_USERNAME"/integrated-nginx:latest integrated-nginx:latest
 
-          echo '==> 重启所有服务'
-          cd ~/ONE
-          docker compose -f docker-compose-production.yml up -d --force-recreate
+            echo "==> 重启所有服务"
+            cd ~/ONE
+            docker compose -f docker-compose-production.yml up -d --force-recreate
 
-          echo '==> 清理旧镜像'
-          docker image prune -f
-          ENDSSH
+            echo "==> 清理旧镜像"
+            docker image prune -f
