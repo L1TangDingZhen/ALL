@@ -47,16 +47,23 @@ namespace P2P.Hubs
         
         // Timer for cleaning up stale connections
         private static Timer _cleanupTimer;
+        private static readonly object _timerLock = new object();
 
         public P2PHub(UserService userService)
         {
             _userService = userService;
-            
-            // Initialize the cleanup timer if it hasn't been started yet
+
+            // Thread-safe initialization of the cleanup timer
             if (_cleanupTimer == null)
             {
-                _cleanupTimer = new Timer(CleanupStaleConnections, null, TimeSpan.Zero, TimeSpan.FromMinutes(2));
-                Console.WriteLine("Connection cleanup timer initialized");
+                lock (_timerLock)
+                {
+                    if (_cleanupTimer == null)
+                    {
+                        _cleanupTimer = new Timer(CleanupStaleConnections, null, TimeSpan.Zero, TimeSpan.FromMinutes(2));
+                        Console.WriteLine("Connection cleanup timer initialized");
+                    }
+                }
             }
         }
         

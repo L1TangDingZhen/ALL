@@ -1,295 +1,389 @@
 <template>
-  <div class="home-view">
-    <div class="animated-background"></div>
+  <div class="portfolio">
+    <!-- Subtle grid background -->
+    <div class="grid-bg"></div>
 
-    <div class="content-wrapper">
-      <div class="welcome-section">
-        <h1 class="main-title">Hey there! 👋</h1>
-        <p class="subtitle">What would you like to do today?</p>
-      </div>
+    <!-- Hero -->
+    <header class="hero">
+      <div class="hero-badge">Portfolio</div>
+      <h1 class="hero-title">
+        <span class="title-line">Built with</span>
+        <span class="title-line gradient-text">Modern Web Tech</span>
+      </h1>
+      <p class="hero-desc">
+        A collection of full-stack applications — designed, developed, and deployed.
+      </p>
+    </header>
 
-      <div class="time-display">
-        <div class="time-text">{{ currentTime }}</div>
-      </div>
-
-      <div class="cards-container">
-        <router-link to="/spin" class="card-link">
-          <div class="card card-food">
-            <div class="card-icon">🍽️</div>
-            <h3>Food Selector</h3>
-            <p>Choose what to eat today</p>
-            <div class="card-arrow">→</div>
+    <!-- Project Cards -->
+    <section class="projects">
+      <router-link to="/login" class="project-card">
+        <div class="card-glow glow-blue"></div>
+        <div class="card-content">
+          <div class="card-header">
+            <span class="card-tag tag-blue">Vue + Django</span>
+            <svg class="card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M7 17L17 7M17 7H7M17 7V17"/>
+            </svg>
           </div>
-        </router-link>
-
-        <router-link to="/login" class="card-link">
-          <div class="card card-student">
-            <div class="card-icon">📚</div>
-            <h3>Student System</h3>
-            <p>Enrollment & Grade Management</p>
-            <div class="card-arrow">→</div>
+          <h2>Student System</h2>
+          <p>Course enrollment, grade management, and role-based access control with JWT authentication.</p>
+          <div class="card-tech">
+            <span>Vue 3</span>
+            <span>Element Plus</span>
+            <span>Django REST</span>
+            <span>SQLite</span>
           </div>
-        </router-link>
+        </div>
+      </router-link>
 
-        <a href="https://thezbr.com/box" target="_blank" class="card-link">
-          <div class="card card-3d">
-            <div class="card-icon">📦</div>
-            <h3>3D Visualizer</h3>
-            <p>Space Optimization Tool</p>
-            <div class="card-arrow">→</div>
+      <a href="/box/" class="project-card">
+        <div class="card-glow glow-purple"></div>
+        <div class="card-content">
+          <div class="card-header">
+            <span class="card-tag tag-purple">React + Django</span>
+            <svg class="card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M7 17L17 7M17 7H7M17 7V17"/>
+            </svg>
           </div>
-        </a>
+          <h2>3D Box Packer</h2>
+          <p>Interactive 3D visualization of box packing algorithms with real-time space optimization.</p>
+          <div class="card-tech">
+            <span>React</span>
+            <span>Three.js</span>
+            <span>Material UI</span>
+            <span>Django</span>
+          </div>
+        </div>
+      </a>
+
+      <a href="/p2p/" class="project-card">
+        <div class="card-glow glow-green"></div>
+        <div class="card-content">
+          <div class="card-header">
+            <span class="card-tag tag-green">React + .NET</span>
+            <svg class="card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M7 17L17 7M17 7H7M17 7V17"/>
+            </svg>
+          </div>
+          <h2>P2P File Transfer</h2>
+          <p>Peer-to-peer file sharing with WebRTC, real-time SignalR connections, and chunked transfer.</p>
+          <div class="card-tech">
+            <span>React</span>
+            <span>SignalR</span>
+            <span>WebRTC</span>
+            <span>.NET 8</span>
+          </div>
+        </div>
+      </a>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-line"></div>
+      <div class="footer-content">
+        <span class="footer-copy">&copy; {{ currentYear }}</span>
+        <div class="footer-links">
+          <a href="https://github.com/L1TangDingZhen" target="_blank" class="footer-link">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+            </svg>
+            GitHub
+          </a>
+        </div>
       </div>
-    </div>
+    </footer>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from "vue";
+import { defineComponent, computed } from "vue";
 
 export default defineComponent({
   name: "HomeView",
   setup() {
-    const currentTime = ref<string>("");
-
-    const updateTime = () => {
-      const now = new Date();
-      currentTime.value = now.toLocaleString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      });
-    };
-
-    onMounted(() => {
-      updateTime();
-      setInterval(updateTime, 1000);
-    });
-
-    return {
-      currentTime,
-    };
+    const currentYear = computed(() => new Date().getFullYear());
+    return { currentYear };
   },
 });
 </script>
 
 <style scoped>
-.home-view {
+/* ── Reset & Base ─────────────────────────────── */
+.portfolio {
   min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
+  background: #0a0a0b;
+  color: #e4e4e7;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
   position: relative;
-  overflow: hidden;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  overflow-x: hidden;
+  padding: 0 24px;
 }
 
-.animated-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #4facfe);
-  background-size: 400% 400%;
-  animation: gradientShift 15s ease infinite;
+/* Subtle dot grid background */
+.grid-bg {
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
   z-index: 0;
 }
 
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-.content-wrapper {
+/* ── Hero ─────────────────────────────────────── */
+.hero {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 140px 0 80px;
+  text-align: center;
   position: relative;
   z-index: 1;
-  max-width: 1200px;
-  width: 100%;
+  animation: fadeIn 1s ease-out;
 }
 
-.welcome-section {
-  text-align: center;
-  margin-bottom: 40px;
-  animation: fadeInDown 0.8s ease-out;
-}
-
-@keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.main-title {
-  font-size: 4rem;
-  font-weight: 700;
-  color: white;
-  margin: 0;
-  text-shadow: 2px 2px 20px rgba(0, 0, 0, 0.3);
-  letter-spacing: 2px;
-}
-
-.subtitle {
-  font-size: 1.5rem;
-  color: rgba(255, 255, 255, 0.9);
-  margin: 10px 0 0 0;
-  font-weight: 300;
-}
-
-.time-display {
-  text-align: center;
-  margin-bottom: 50px;
-  animation: fadeIn 1s ease-out 0.3s both;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.time-text {
-  font-size: 1.3rem;
-  color: white;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-  padding: 15px 30px;
-  border-radius: 50px;
+.hero-badge {
   display: inline-block;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  font-weight: 300;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #71717a;
+  border: 1px solid #27272a;
+  border-radius: 100px;
+  padding: 6px 20px;
+  margin-bottom: 32px;
 }
 
-.cards-container {
+.hero-title {
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  margin: 0 0 24px;
+}
+
+.title-line {
+  display: block;
+  color: #fafafa;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-desc {
+  font-size: 1.125rem;
+  line-height: 1.7;
+  color: #a1a1aa;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* ── Project Cards ────────────────────────────── */
+.projects {
+  max-width: 1080px;
+  margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 30px;
-  animation: fadeInUp 0.8s ease-out 0.5s both;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+  padding-bottom: 100px;
+  position: relative;
+  z-index: 1;
+  animation: fadeInUp 1s ease-out 0.3s both;
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.card-link {
+.project-card {
+  position: relative;
+  background: #111113;
+  border: 1px solid #1e1e22;
+  border-radius: 16px;
+  padding: 32px;
   text-decoration: none;
+  color: inherit;
+  transition: all 0.3s ease;
+  overflow: hidden;
   display: block;
 }
 
-.card {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 20px;
-  padding: 40px 30px;
-  text-align: center;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-  border: 2px solid transparent;
+.project-card:hover {
+  border-color: #2a2a30;
+  transform: translateY(-4px);
 }
 
-.card::before {
-  content: '';
+/* Glow effect on hover */
+.card-glow {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.3));
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
   opacity: 0;
-  transition: opacity 0.4s;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
 }
 
-.card:hover {
-  transform: translateY(-10px) scale(1.02);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-}
-
-.card:hover::before {
+.project-card:hover .card-glow {
   opacity: 1;
 }
 
-.card-food:hover { border-color: #ff6b6b; }
-.card-student:hover { border-color: #4ecdc4; }
-.card-3d:hover { border-color: #ffe66d; }
+.glow-blue {
+  background: radial-gradient(circle at 50% 50%, rgba(59,130,246,0.06) 0%, transparent 60%);
+}
+.glow-purple {
+  background: radial-gradient(circle at 50% 50%, rgba(139,92,246,0.06) 0%, transparent 60%);
+}
+.glow-green {
+  background: radial-gradient(circle at 50% 50%, rgba(16,185,129,0.06) 0%, transparent 60%);
+}
 
-.card-icon {
-  font-size: 4rem;
+.card-content {
+  position: relative;
+  z-index: 1;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 20px;
-  transition: transform 0.4s;
 }
 
-.card:hover .card-icon {
-  transform: scale(1.2) rotate(5deg);
-}
-
-.card h3 {
-  font-size: 1.8rem;
-  color: #2c3e50;
-  margin: 0 0 10px 0;
+.card-tag {
+  font-size: 0.7rem;
   font-weight: 600;
+  letter-spacing: 0.5px;
+  padding: 4px 12px;
+  border-radius: 100px;
 }
 
-.card p {
-  font-size: 1rem;
-  color: #7f8c8d;
-  margin: 0 0 20px 0;
-  line-height: 1.6;
+.tag-blue {
+  background: rgba(59,130,246,0.12);
+  color: #60a5fa;
+}
+.tag-purple {
+  background: rgba(139,92,246,0.12);
+  color: #a78bfa;
+}
+.tag-green {
+  background: rgba(16,185,129,0.12);
+  color: #34d399;
 }
 
 .card-arrow {
-  font-size: 2rem;
-  color: #667eea;
-  opacity: 0;
-  transform: translateX(-20px);
-  transition: all 0.4s;
+  width: 20px;
+  height: 20px;
+  color: #3f3f46;
+  transition: all 0.3s ease;
 }
 
-.card:hover .card-arrow {
-  opacity: 1;
-  transform: translateX(0);
+.project-card:hover .card-arrow {
+  color: #a1a1aa;
+  transform: translate(3px, -3px);
 }
 
+.card-content h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #fafafa;
+  margin: 0 0 12px;
+  letter-spacing: -0.02em;
+}
+
+.card-content p {
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: #71717a;
+  margin: 0 0 24px;
+}
+
+.card-tech {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.card-tech span {
+  font-size: 0.7rem;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: #18181b;
+  color: #a1a1aa;
+  border: 1px solid #27272a;
+}
+
+/* ── Footer ───────────────────────────────────── */
+.footer {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding-bottom: 48px;
+  position: relative;
+  z-index: 1;
+}
+
+.footer-line {
+  height: 1px;
+  background: #1e1e22;
+  margin-bottom: 24px;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-copy {
+  font-size: 0.8rem;
+  color: #3f3f46;
+}
+
+.footer-links {
+  display: flex;
+  gap: 20px;
+}
+
+.footer-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: #52525b;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-link:hover {
+  color: #a1a1aa;
+}
+
+/* ── Animations ───────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Responsive ───────────────────────────────── */
 @media (max-width: 768px) {
-  .main-title {
-    font-size: 2.5rem;
+  .hero {
+    padding: 100px 0 60px;
   }
 
-  .subtitle {
-    font-size: 1.2rem;
-  }
-
-  .time-text {
-    font-size: 1rem;
-    padding: 10px 20px;
-  }
-
-  .cards-container {
+  .projects {
     grid-template-columns: 1fr;
-    gap: 20px;
   }
 
-  .card {
-    padding: 30px 20px;
+  .footer-content {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
   }
 }
 </style>

@@ -37,6 +37,9 @@ ENV DJANGO_SETTINGS_MODULE=temp_settings
 # 收集静态文件
 RUN python manage.py collectstatic --noinput
 
+# 初始化数据库
+RUN python manage.py migrate --noinput
+
 # 恢复原始设置模块
 ENV DJANGO_SETTINGS_MODULE=final.settings
 

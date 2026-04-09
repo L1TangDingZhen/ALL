@@ -805,37 +805,36 @@ class WebRTCService {
   // Test STUN connectivity
   async testStunConnectivity() {
     return new Promise(resolve => {
+      let resolved = false;
+      const done = (result) => {
+        if (resolved) return;
+        resolved = true;
+        resolve(result);
+        try { pc.close(); } catch (e) {}
+      };
+
       try {
         const pc = new RTCPeerConnection({
           iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
         });
-        
+
         let stunDetected = false;
-        
+
         pc.onicecandidate = (event) => {
           if (event.candidate) {
             if (event.candidate.candidate.indexOf('srflx') !== -1) {
               stunDetected = true;
             }
           } else {
-            // ICE gathering complete
-            resolve(stunDetected);
-            pc.close();
+            done(stunDetected);
           }
         };
-        
-        // Create data channel to trigger ICE gathering
+
         pc.createDataChannel('stun-test');
         pc.createOffer().then(offer => pc.setLocalDescription(offer));
-        
-        // Timeout after 5 seconds
-        setTimeout(() => {
-          if (pc.iceGatheringState !== 'complete') {
-            resolve(false);
-            pc.close();
-          }
-        }, 5000);
-        
+
+        setTimeout(() => done(false), 5000);
+
       } catch (error) {
         console.error('STUN test error:', error);
         resolve(false);
@@ -846,47 +845,46 @@ class WebRTCService {
   // Test TURN connectivity
   async testTurnConnectivity() {
     return new Promise(resolve => {
+      let resolved = false;
+      let pc;
+      const done = (result) => {
+        if (resolved) return;
+        resolved = true;
+        resolve(result);
+        try { pc.close(); } catch (e) {}
+      };
+
       try {
-        // Find a TURN server in our configuration
-        const turnServer = this.iceServers.find(server => 
-          typeof server.urls === 'string' ? server.urls.startsWith('turn:') : 
+        const turnServer = this.iceServers.find(server =>
+          typeof server.urls === 'string' ? server.urls.startsWith('turn:') :
           server.urls.some(url => url.startsWith('turn:')));
-          
+
         if (!turnServer) {
           resolve(false);
           return;
         }
-        
-        const pc = new RTCPeerConnection({
+
+        pc = new RTCPeerConnection({
           iceServers: [turnServer]
         });
-        
+
         let turnDetected = false;
-        
+
         pc.onicecandidate = (event) => {
           if (event.candidate) {
             if (event.candidate.candidate.indexOf('relay') !== -1) {
               turnDetected = true;
             }
           } else {
-            // ICE gathering complete
-            resolve(turnDetected);
-            pc.close();
+            done(turnDetected);
           }
         };
-        
-        // Create data channel to trigger ICE gathering
+
         pc.createDataChannel('turn-test');
         pc.createOffer().then(offer => pc.setLocalDescription(offer));
-        
-        // Timeout after 5 seconds
-        setTimeout(() => {
-          if (pc.iceGatheringState !== 'complete') {
-            resolve(false);
-            pc.close();
-          }
-        }, 5000);
-        
+
+        setTimeout(() => done(false), 5000);
+
       } catch (error) {
         console.error('TURN test error:', error);
         resolve(false);
@@ -918,43 +916,43 @@ class WebRTCService {
   startConnectionQualityMonitoring(peerId) {
     const peerConnection = this.connections[peerId];
     if (!peerConnection) return;
-    
+
+    // Clean up previous monitor if exists
+    if (this.connectionQualityData[peerId] && this.connectionQualityData[peerId].monitorInterval) {
+      clearInterval(this.connectionQualityData[peerId].monitorInterval);
+    }
+
     const monitorInterval = setInterval(() => {
-      if (peerConnection.connectionState === 'connected') {
-        peerConnection.getStats(null).then(stats => {
-          let quality = {
-            timestamp: Date.now(),
-            rtt: null,
-            bytesSent: 0,
-            bytesReceived: 0
-          };
-          
-          stats.forEach(report => {
-            if (report.type === 'transport') {
-              if (report.currentRoundTripTime) {
-                quality.rtt = report.currentRoundTripTime * 1000; // Convert to ms
-                console.log(`Connection quality for ${peerId} - RTT: ${quality.rtt}ms`);
-              }
-              
-              if (report.bytesSent) quality.bytesSent = report.bytesSent;
-              if (report.bytesReceived) quality.bytesReceived = report.bytesReceived;
+      if (!peerConnection || peerConnection.connectionState !== 'connected') {
+        clearInterval(monitorInterval);
+        return;
+      }
+
+      peerConnection.getStats(null).then(stats => {
+        let quality = {
+          timestamp: Date.now(),
+          rtt: null,
+          bytesSent: 0,
+          bytesReceived: 0,
+          monitorInterval: monitorInterval  // Preserve interval ref
+        };
+
+        stats.forEach(report => {
+          if (report.type === 'transport') {
+            if (report.currentRoundTripTime) {
+              quality.rtt = report.currentRoundTripTime * 1000;
             }
-          });
-          
-          this.connectionQualityData[peerId] = quality;
-          
-          // Adapt to network conditions if needed
-          if (quality.rtt && quality.rtt > 500) {
-            console.log('High latency detected, adapting transmission rate');
-            // Implementation would adjust chunk size or transmission rate
+            if (report.bytesSent) quality.bytesSent = report.bytesSent;
+            if (report.bytesReceived) quality.bytesReceived = report.bytesReceived;
           }
         });
-      } else {
+
+        this.connectionQualityData[peerId] = quality;
+      }).catch(() => {
         clearInterval(monitorInterval);
-      }
+      });
     }, 5000);
-    
-    // Store the interval ID for cleanup
+
     this.connectionQualityData[peerId] = { monitorInterval };
   }
 }
@@ -1030,22 +1028,12 @@ webRTCService.sendFile = function(file, onProgress) {
     const transferId = `file_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
     
     // Calculate optimal chunk size based on file type and network quality
-    let chunkSize = 16384; // Default 16 KB chunks
+    let chunkSize = 256 * 1024; // Default 256 KB chunks (optimized for throughput)
 
-    // Adjust chunk size for video files
-    const isVideo = file.type.startsWith('video/');
-    const isLargeFile = file.size > 50 * 1024 * 1024; // 50MB
+    // Adjust chunk size for network quality
     const connectionQuality = this.connectionQualityData[peerId];
-
-    if (isVideo || isLargeFile) {
-      // Optimize for larger chunks to improve throughput for large files
-      // but not too large to cause UI freezing
-      chunkSize = 128 * 1024; // 128KB for videos and large files (optimized for higher throughput)
-
-      // If we have connection quality data and RTT is high, use smaller chunks
-      if (connectionQuality && connectionQuality.rtt && connectionQuality.rtt > 200) {
-        chunkSize = 64 * 1024; // 64KB for high latency connections (increased from 32KB)
-      }
+    if (connectionQuality && connectionQuality.rtt && connectionQuality.rtt > 300) {
+      chunkSize = 128 * 1024; // 128KB for high latency connections
     }
     
     // Calculate total chunks
@@ -1160,29 +1148,43 @@ webRTCService.processSendQueue = function(transferId) {
   const dataChannel = this.dataChannels[transfer.peerId];
   if (!dataChannel || dataChannel.readyState !== 'open') return;
   
-  // Check datachannel buffering to prevent overwhelming it
-  const isChannelCongested = dataChannel.bufferedAmount > 5 * 1024 * 1024; // 5MB threshold (optimized for higher throughput)
-  
-  // Process chunks if channel is not congested and we have chunks to send
-  while (!isChannelCongested && 
-         transfer.sendQueue.length > 0 && 
-         transfer.inFlightChunks < transfer.maxConcurrentChunks) {
-    
-    const chunk = transfer.sendQueue.shift();
-    transfer.inFlightChunks++;
-    
-    try {
-      // Always send chunks as JSON with metadata
-      let chunkData = chunk.data;
+  // Fast Base64 encoding (O(n) instead of O(n²) string concatenation)
+  const arrayBufferToBase64 = (buffer) => {
+    const bytes = new Uint8Array(buffer);
+    const chunkSize = 8192;
+    let binary = '';
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      const slice = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
+      binary += String.fromCharCode.apply(null, slice);
+    }
+    return btoa(binary);
+  };
 
-      // Convert ArrayBuffer to base64 if needed
-      if (chunk.data instanceof ArrayBuffer) {
-        const bytes = new Uint8Array(chunk.data);
-        let binary = '';
-        for (let i = 0; i < bytes.length; i++) {
-          binary += String.fromCharCode(bytes[i]);
+  // Set up bufferedAmountLow event for flow control (only once per channel)
+  const BUFFER_LOW_THRESHOLD = 512 * 1024; // 512KB
+  const BUFFER_HIGH_THRESHOLD = 2 * 1024 * 1024; // 2MB
+  if (!dataChannel._bufferedAmountLowSetup) {
+    dataChannel.bufferedAmountLowThreshold = BUFFER_LOW_THRESHOLD;
+    dataChannel.onbufferedamountlow = () => {
+      // Resume all transfers on this channel
+      Object.keys(this.fileTransfers).forEach(tid => {
+        const t = this.fileTransfers[tid];
+        if (t && !t.canceled && t.peerId === transfer.peerId && t.sendQueue.length > 0) {
+          this.processSendQueue(tid);
         }
-        chunkData = btoa(binary);
+      });
+    };
+    dataChannel._bufferedAmountLowSetup = true;
+  }
+
+  // Send chunks as fast as the data channel allows
+  while (transfer.sendQueue.length > 0 && dataChannel.bufferedAmount < BUFFER_HIGH_THRESHOLD) {
+    const chunk = transfer.sendQueue.shift();
+
+    try {
+      let chunkData = chunk.data;
+      if (chunk.data instanceof ArrayBuffer) {
+        chunkData = arrayBufferToBase64(chunk.data);
       }
 
       const chunkPacket = {
@@ -1194,12 +1196,10 @@ webRTCService.processSendQueue = function(transferId) {
       };
       dataChannel.send(JSON.stringify(chunkPacket));
 
-      // Update sent chunk count and progress after actually sending
       transfer.sentChunkCount++;
       const sendProgress = Math.round((transfer.sentChunkCount / transfer.totalChunks) * 100);
       transfer.progress = sendProgress;
 
-      // Report progress to UI via callback
       if (transfer.onProgress) {
         transfer.onProgress({
           transferId,
@@ -1210,12 +1210,8 @@ webRTCService.processSendQueue = function(transferId) {
         });
       }
 
-      console.log(`Sent chunk ${chunk.index + 1}/${transfer.totalChunks} (${sendProgress}%)`);
-
-      // If this is the final chunk
       if (chunk.isFinal) {
         setTimeout(() => {
-          // Send transfer complete notification
           const completePacket = {
             type: 'file-complete',
             transferId: transferId,
@@ -1223,35 +1219,19 @@ webRTCService.processSendQueue = function(transferId) {
           };
           dataChannel.send(JSON.stringify(completePacket));
           console.log(`File transfer complete: ${transfer.file.name}`);
-          
-          // Clean up
+
           if (transfer.worker) {
             transfer.worker.terminate();
           }
           delete this.fileTransfers[transferId];
-        }, 100); // Small delay to ensure all chunks are processed
+        }, 100);
       }
-      
-      // Decrease in-flight count after successful send
-      transfer.inFlightChunks--;
-      
-      // Continue processing queue if there are more chunks
-      if (transfer.sendQueue.length > 0) {
-        // Use requestAnimationFrame to avoid blocking UI
-        requestAnimationFrame(() => this.processSendQueue(transferId));
-      }
-      
+
     } catch (error) {
       console.error('Error sending chunk:', error);
-      transfer.inFlightChunks--;
     }
   }
-  
-  // If channel is congested, wait and try again
-  if (isChannelCongested) {
-    console.log('DataChannel congested, throttling send rate');
-    setTimeout(() => this.processSendQueue(transferId), 100);
-  }
+  // If buffer is full, bufferedAmountLow event will resume sending automatically
 };
 
 webRTCService.cancelFileTransfer = function(transferId) {
