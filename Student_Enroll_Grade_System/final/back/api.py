@@ -436,9 +436,16 @@ def update_course(request, course_id: str, info: CourseChange):
 #目前登录用户的成绩
 @api.get('/grade', response={200: List[Grade]}, auth=AuthBearer())
 def all_grade(request):
-    user = request.auth  # Assuming you have access to the authenticated user
-    grades = grade.objects.filter(student_id=user.student_id)  # Filter by authenticated user's student record
-    return 200, list(grades.values())
+    user = request.auth
+    grades = grade.objects.filter(enroll__student=user).select_related('enroll__course', 'enroll__student')
+    result = []
+    for g in grades:
+        result.append({
+            'course_id': g.enroll.course.course_id,
+            'student_id': g.enroll.student.student_id,
+            'score': g.score,
+        })
+    return 200, result
 
 
 
