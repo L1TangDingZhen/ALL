@@ -1,0 +1,1544 @@
+[
+  {
+    "model": "app.user",
+    "pk": 1,
+    "fields": {
+      "name": "111",
+      "password_hash": "pbkdf2_sha256$870000$4N9oL2haotdI6WNZ7xNO9t$xdtwWf35qD4OlUluo6kpUtQVHsPKO3L/IjtV4nNklqA=",
+      "is_manager": false
+    }
+  },
+  {
+    "model": "app.user",
+    "pk": 2,
+    "fields": {
+      "name": "222",
+      "password_hash": "pbkdf2_sha256$870000$h1g0OdUIzloaAMSTBcnA2K$bjF9qFPlHoO0ic0zXN+3wainYh82GxiEABRXyL23uyU=",
+      "is_manager": false
+    }
+  },
+  {
+    "model": "app.user",
+    "pk": 3,
+    "fields": {
+      "name": "333",
+      "password_hash": "pbkdf2_sha256$870000$r1rEhmX9TMWROFdqZHjtnG$Ko1Ibtzv0sgpDr7ZuR18uSiefSO37yuaWp2+j46J6uw=",
+      "is_manager": true
+    }
+  },
+  {
+    "model": "app.user",
+    "pk": 4,
+    "fields": {
+      "name": "444",
+      "password_hash": "pbkdf2_sha256$870000$1ZCL2LHMUe0P4OeJO30fid$DYPGPaP2VcPzRNHyhvszzNokeO1CH+SOq8/z8HO+pPI=",
+      "is_manager": false
+    }
+  },
+  {
+    "model": "app.user",
+    "pk": 5,
+    "fields": {
+      "name": "555",
+      "password_hash": "pbkdf2_sha256$870000$tmic3FLaPacBL2Wxb3M4hW$YQbzspPocSKfxFz68Qfhou/SgNsVJsc4vNmc7kQZ4FM=",
+      "is_manager": false
+    }
+  },
+  {
+    "model": "app.task",
+    "pk": 1,
+    "fields": {
+      "creator": 2,
+      "worker": 1,
+      "space_x": 10.0,
+      "space_y": 10.0,
+      "space_z": 10.0,
+      "created_at": "2025-03-14T13:05:11.955493Z"
+    }
+  },
+  {
+    "model": "app.task",
+    "pk": 2,
+    "fields": {
+      "creator": 3,
+      "worker": 1,
+      "space_x": 10.0,
+      "space_y": 10.0,
+      "space_z": 10.0,
+      "created_at": "2025-03-15T02:52:36.705515Z"
+    }
+  },
+  {
+    "model": "app.task",
+    "pk": 3,
+    "fields": {
+      "creator": 3,
+      "worker": 1,
+      "space_x": 10.0,
+      "space_y": 10.0,
+      "space_z": 10.0,
+      "created_at": "2025-03-15T10:02:08.227263Z"
+    }
+  },
+  {
+    "model": "app.task",
+    "pk": 4,
+    "fields": {
+      "creator": 3,
+      "worker": 1,
+      "space_x": 10.0,
+      "space_y": 10.0,
+      "space_z": 10.0,
+      "created_at": "2025-03-24T06:43:23.860601Z"
+    }
+  },
+  {
+    "model": "app.task",
+    "pk": 5,
+    "fields": {
+      "creator": 3,
+      "worker": 1,
+      "space_x": 3.0,
+      "space_y": 3.0,
+      "space_z": 3.0,
+      "created_at": "2025-03-24T08:07:55.340370Z"
+    }
+  },
+  {
+    "model": "app.task",
+    "pk": 6,
+    "fields": {
+      "creator": 3,
+      "worker": 1,
+      "space_x": 2.0,
+      "space_y": 2.0,
+      "space_z": 2.0,
+      "created_at": "2025-03-24T08:10:35.952094Z"
+    }
+  },
+  {
+    "model": "app.task",
+    "pk": 7,
+    "fields": {
+      "creator": 3,
+      "worker": 1,
+      "space_x": 10.0,
+      "space_y": 10.0,
+      "space_z": 10.0,
+      "created_at": "2025-03-26T05:18:24.585409Z"
+    }
+  },
+  {
+    "model": "app.task",
+    "pk": 8,
+    "fields": {
+      "creator": 3,
+      "worker": 1,
+      "space_x": 10.0,
+      "space_y": 10.0,
+      "space_z": 10.0,
+      "created_at": "2025-04-05T05:34:52.581470Z"
+    }
+  },
+  {
+    "model": "app.task",
+    "pk": 9,
+    "fields": {
+      "creator": 3,
+      "worker": 1,
+      "space_x": 10.0,
+      "space_y": 10.0,
+      "space_z": 10.0,
+      "created_at": "2025-04-05T06:28:04.072278Z"
+    }
+  },
+  {
+    "model": "app.task",
+    "pk": 10,
+    "fields": {
+      "creator": 3,
+      "worker": 1,
+      "space_x": 10.0,
+      "space_y": 10.0,
+      "space_z": 10.0,
+      "created_at": "2025-04-07T05:54:46.857206Z"
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 1,
+    "fields": {
+      "order_id": 1,
+      "name": "aaa",
+      "position_x": 0.0,
+      "position_y": 0.0,
+      "position_z": 0.0,
+      "width": 2.0,
+      "height": 3.0,
+      "depth": 4.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 1
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 2,
+    "fields": {
+      "order_id": 1,
+      "name": "string",
+      "position_x": 0.0,
+      "position_y": 0.0,
+      "position_z": 0.0,
+      "width": 1.0,
+      "height": 2.0,
+      "depth": 3.0,
+      "face_up": true,
+      "fragile": true,
+      "task": 2
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 3,
+    "fields": {
+      "order_id": 1,
+      "name": "1",
+      "position_x": 0.0,
+      "position_y": 0.0,
+      "position_z": 0.0,
+      "width": 1.0,
+      "height": 1.0,
+      "depth": 1.0,
+      "face_up": true,
+      "fragile": true,
+      "task": 3
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 4,
+    "fields": {
+      "order_id": 1,
+      "name": "1",
+      "position_x": 0.0,
+      "position_y": 0.0,
+      "position_z": 0.0,
+      "width": 2.0,
+      "height": 2.0,
+      "depth": 2.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 4
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 5,
+    "fields": {
+      "order_id": 2,
+      "name": "2",
+      "position_x": 2.0,
+      "position_y": 0.0,
+      "position_z": 0.0,
+      "width": 4.0,
+      "height": 5.0,
+      "depth": 6.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 4
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 6,
+    "fields": {
+      "order_id": 1,
+      "name": "1",
+      "position_x": 0.0,
+      "position_y": 0.0,
+      "position_z": 0.0,
+      "width": 1.0,
+      "height": 1.0,
+      "depth": 1.0,
+      "face_up": true,
+      "fragile": false,
+      "task": 5
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 7,
+    "fields": {
+      "order_id": 2,
+      "name": "2",
+      "position_x": 1.0,
+      "position_y": 0.0,
+      "position_z": 0.0,
+      "width": 1.0,
+      "height": 1.0,
+      "depth": 1.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 5
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 8,
+    "fields": {
+      "order_id": 3,
+      "name": "3",
+      "position_x": 2.0,
+      "position_y": 0.0,
+      "position_z": 0.0,
+      "width": 1.0,
+      "height": 1.0,
+      "depth": 1.0,
+      "face_up": false,
+      "fragile": true,
+      "task": 5
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 9,
+    "fields": {
+      "order_id": 1,
+      "name": "1",
+      "position_x": 0.0,
+      "position_y": 0.0,
+      "position_z": 0.0,
+      "width": 1.0,
+      "height": 1.0,
+      "depth": 1.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 6
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 10,
+    "fields": {
+      "order_id": 2,
+      "name": "2",
+      "position_x": 1.0,
+      "position_y": 0.0,
+      "position_z": 0.0,
+      "width": 1.0,
+      "height": 1.0,
+      "depth": 1.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 6
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 11,
+    "fields": {
+      "order_id": 3,
+      "name": "3",
+      "position_x": 2.0,
+      "position_y": 0.0,
+      "position_z": 0.0,
+      "width": 1.0,
+      "height": 1.0,
+      "depth": 1.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 6
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 12,
+    "fields": {
+      "order_id": 4,
+      "name": "4",
+      "position_x": 3.0,
+      "position_y": 0.0,
+      "position_z": 0.0,
+      "width": 1.0,
+      "height": 1.0,
+      "depth": 1.0,
+      "face_up": false,
+      "fragile": true,
+      "task": 6
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 13,
+    "fields": {
+      "order_id": 1,
+      "name": "6",
+      "position_x": 0.0,
+      "position_y": 0.0,
+      "position_z": 0.0,
+      "width": 5.0,
+      "height": 5.0,
+      "depth": 5.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 7
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 14,
+    "fields": {
+      "order_id": 2,
+      "name": "3",
+      "position_x": 5.0,
+      "position_y": 0.0,
+      "position_z": 0.0,
+      "width": 5.0,
+      "height": 4.0,
+      "depth": 3.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 7
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 15,
+    "fields": {
+      "order_id": 3,
+      "name": "18",
+      "position_x": 5.0,
+      "position_y": 4.0,
+      "position_z": 0.0,
+      "width": 4.0,
+      "height": 5.0,
+      "depth": 4.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 7
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 16,
+    "fields": {
+      "order_id": 4,
+      "name": "21",
+      "position_x": 0.0,
+      "position_y": 5.0,
+      "position_z": 0.0,
+      "width": 5.0,
+      "height": 2.0,
+      "depth": 4.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 7
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 17,
+    "fields": {
+      "order_id": 5,
+      "name": "19",
+      "position_x": 5.0,
+      "position_y": 4.0,
+      "position_z": 4.0,
+      "width": 4.0,
+      "height": 4.0,
+      "depth": 2.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 7
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 18,
+    "fields": {
+      "order_id": 6,
+      "name": "26",
+      "position_x": 0.0,
+      "position_y": 5.0,
+      "position_z": 4.0,
+      "width": 3.0,
+      "height": 2.0,
+      "depth": 5.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 7
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 19,
+    "fields": {
+      "order_id": 7,
+      "name": "12",
+      "position_x": 5.0,
+      "position_y": 0.0,
+      "position_z": 3.0,
+      "width": 4.0,
+      "height": 4.0,
+      "depth": 2.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 7
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 20,
+    "fields": {
+      "order_id": 8,
+      "name": "25",
+      "position_x": 8.0,
+      "position_y": 4.0,
+      "position_z": 4.0,
+      "width": 1.0,
+      "height": 5.0,
+      "depth": 4.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 7
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 21,
+    "fields": {
+      "order_id": 9,
+      "name": "27",
+      "position_x": 0.0,
+      "position_y": 7.0,
+      "position_z": 0.0,
+      "width": 5.0,
+      "height": 3.0,
+      "depth": 2.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 7
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 22,
+    "fields": {
+      "order_id": 10,
+      "name": "5",
+      "position_x": 0.0,
+      "position_y": 0.0,
+      "position_z": 5.0,
+      "width": 5.0,
+      "height": 3.0,
+      "depth": 2.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 7
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 23,
+    "fields": {
+      "order_id": 11,
+      "name": "20",
+      "position_x": 9.0,
+      "position_y": 4.0,
+      "position_z": 0.0,
+      "width": 1.0,
+      "height": 5.0,
+      "depth": 5.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 7
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 24,
+    "fields": {
+      "order_id": 12,
+      "name": "30",
+      "position_x": 5.0,
+      "position_y": 7.0,
+      "position_z": 4.0,
+      "width": 3.0,
+      "height": 2.0,
+      "depth": 4.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 7
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 25,
+    "fields": {
+      "order_id": 13,
+      "name": "29",
+      "position_x": 8.0,
+      "position_y": 4.0,
+      "position_z": 8.0,
+      "width": 1.0,
+      "height": 5.0,
+      "depth": 2.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 7
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 26,
+    "fields": {
+      "order_id": 14,
+      "name": "28",
+      "position_x": 5.0,
+      "position_y": 7.0,
+      "position_z": 8.0,
+      "width": 3.0,
+      "height": 2.0,
+      "depth": 2.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 7
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 27,
+    "fields": {
+      "order_id": 15,
+      "name": "24",
+      "position_x": 0.0,
+      "position_y": 7.0,
+      "position_z": 2.0,
+      "width": 2.0,
+      "height": 1.0,
+      "depth": 5.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 7
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 28,
+    "fields": {
+      "order_id": 16,
+      "name": "23",
+      "position_x": 3.0,
+      "position_y": 5.0,
+      "position_z": 4.0,
+      "width": 1.0,
+      "height": 1.0,
+      "depth": 5.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 7
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 29,
+    "fields": {
+      "order_id": 17,
+      "name": "22",
+      "position_x": 9.0,
+      "position_y": 0.0,
+      "position_z": 3.0,
+      "width": 1.0,
+      "height": 4.0,
+      "depth": 1.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 7
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 30,
+    "fields": {
+      "order_id": 18,
+      "name": "17",
+      "position_x": 0.0,
+      "position_y": 3.0,
+      "position_z": 5.0,
+      "width": 3.0,
+      "height": 1.0,
+      "depth": 2.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 7
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 31,
+    "fields": {
+      "order_id": 19,
+      "name": "15",
+      "position_x": 9.0,
+      "position_y": 4.0,
+      "position_z": 5.0,
+      "width": 1.0,
+      "height": 5.0,
+      "depth": 3.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 7
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 32,
+    "fields": {
+      "order_id": 20,
+      "name": "13",
+      "position_x": 0.0,
+      "position_y": 0.0,
+      "position_z": 7.0,
+      "width": 5.0,
+      "height": 2.0,
+      "depth": 3.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 7
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 33,
+    "fields": {
+      "order_id": 21,
+      "name": "16",
+      "position_x": 3.0,
+      "position_y": 3.0,
+      "position_z": 5.0,
+      "width": 2.0,
+      "height": 2.0,
+      "depth": 2.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 7
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 34,
+    "fields": {
+      "order_id": 22,
+      "name": "14",
+      "position_x": 5.0,
+      "position_y": 0.0,
+      "position_z": 5.0,
+      "width": 4.0,
+      "height": 2.0,
+      "depth": 2.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 7
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 35,
+    "fields": {
+      "order_id": 23,
+      "name": "11",
+      "position_x": 9.0,
+      "position_y": 4.0,
+      "position_z": 8.0,
+      "width": 1.0,
+      "height": 4.0,
+      "depth": 1.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 7
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 36,
+    "fields": {
+      "order_id": 24,
+      "name": "10",
+      "position_x": 5.0,
+      "position_y": 0.0,
+      "position_z": 7.0,
+      "width": 4.0,
+      "height": 2.0,
+      "depth": 2.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 7
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 37,
+    "fields": {
+      "order_id": 25,
+      "name": "9",
+      "position_x": 9.0,
+      "position_y": 0.0,
+      "position_z": 4.0,
+      "width": 1.0,
+      "height": 3.0,
+      "depth": 3.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 7
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 38,
+    "fields": {
+      "order_id": 26,
+      "name": "8",
+      "position_x": 0.0,
+      "position_y": 2.0,
+      "position_z": 7.0,
+      "width": 5.0,
+      "height": 1.0,
+      "depth": 3.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 7
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 39,
+    "fields": {
+      "order_id": 27,
+      "name": "7",
+      "position_x": 2.0,
+      "position_y": 7.0,
+      "position_z": 2.0,
+      "width": 2.0,
+      "height": 3.0,
+      "depth": 1.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 7
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 40,
+    "fields": {
+      "order_id": 28,
+      "name": "4",
+      "position_x": 2.0,
+      "position_y": 7.0,
+      "position_z": 3.0,
+      "width": 2.0,
+      "height": 1.0,
+      "depth": 5.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 7
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 41,
+    "fields": {
+      "order_id": 29,
+      "name": "2",
+      "position_x": 2.0,
+      "position_y": 8.0,
+      "position_z": 3.0,
+      "width": 2.0,
+      "height": 1.0,
+      "depth": 5.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 7
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 42,
+    "fields": {
+      "order_id": 30,
+      "name": "1",
+      "position_x": 5.0,
+      "position_y": 2.0,
+      "position_z": 5.0,
+      "width": 3.0,
+      "height": 1.0,
+      "depth": 5.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 7
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 43,
+    "fields": {
+      "order_id": 1,
+      "name": "6",
+      "position_x": 0.0,
+      "position_y": 0.0,
+      "position_z": 0.0,
+      "width": 5.0,
+      "height": 5.0,
+      "depth": 5.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 8
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 44,
+    "fields": {
+      "order_id": 2,
+      "name": "3",
+      "position_x": 5.0,
+      "position_y": 0.0,
+      "position_z": 0.0,
+      "width": 5.0,
+      "height": 4.0,
+      "depth": 3.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 8
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 45,
+    "fields": {
+      "order_id": 3,
+      "name": "18",
+      "position_x": 5.0,
+      "position_y": 4.0,
+      "position_z": 0.0,
+      "width": 4.0,
+      "height": 5.0,
+      "depth": 4.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 8
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 46,
+    "fields": {
+      "order_id": 4,
+      "name": "21",
+      "position_x": 0.0,
+      "position_y": 5.0,
+      "position_z": 0.0,
+      "width": 5.0,
+      "height": 2.0,
+      "depth": 4.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 8
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 47,
+    "fields": {
+      "order_id": 5,
+      "name": "19",
+      "position_x": 5.0,
+      "position_y": 4.0,
+      "position_z": 4.0,
+      "width": 3.0,
+      "height": 3.0,
+      "depth": 4.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 8
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 48,
+    "fields": {
+      "order_id": 6,
+      "name": "26",
+      "position_x": 0.0,
+      "position_y": 5.0,
+      "position_z": 4.0,
+      "width": 3.0,
+      "height": 2.0,
+      "depth": 5.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 8
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 49,
+    "fields": {
+      "order_id": 7,
+      "name": "12",
+      "position_x": 5.0,
+      "position_y": 0.0,
+      "position_z": 3.0,
+      "width": 4.0,
+      "height": 4.0,
+      "depth": 2.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 8
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 50,
+    "fields": {
+      "order_id": 8,
+      "name": "25",
+      "position_x": 8.0,
+      "position_y": 4.0,
+      "position_z": 4.0,
+      "width": 1.0,
+      "height": 5.0,
+      "depth": 4.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 8
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 51,
+    "fields": {
+      "order_id": 1,
+      "name": "6",
+      "position_x": 0.0,
+      "position_y": 0.0,
+      "position_z": 0.0,
+      "width": 5.0,
+      "height": 5.0,
+      "depth": 5.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 9
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 52,
+    "fields": {
+      "order_id": 2,
+      "name": "3",
+      "position_x": 5.0,
+      "position_y": 0.0,
+      "position_z": 0.0,
+      "width": 5.0,
+      "height": 4.0,
+      "depth": 3.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 9
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 53,
+    "fields": {
+      "order_id": 3,
+      "name": "18",
+      "position_x": 5.0,
+      "position_y": 4.0,
+      "position_z": 0.0,
+      "width": 4.0,
+      "height": 5.0,
+      "depth": 4.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 9
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 54,
+    "fields": {
+      "order_id": 4,
+      "name": "21",
+      "position_x": 0.0,
+      "position_y": 5.0,
+      "position_z": 0.0,
+      "width": 5.0,
+      "height": 2.0,
+      "depth": 4.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 9
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 55,
+    "fields": {
+      "order_id": 5,
+      "name": "19",
+      "position_x": 5.0,
+      "position_y": 4.0,
+      "position_z": 4.0,
+      "width": 3.0,
+      "height": 3.0,
+      "depth": 4.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 9
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 56,
+    "fields": {
+      "order_id": 6,
+      "name": "26",
+      "position_x": 0.0,
+      "position_y": 5.0,
+      "position_z": 4.0,
+      "width": 3.0,
+      "height": 2.0,
+      "depth": 5.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 9
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 57,
+    "fields": {
+      "order_id": 7,
+      "name": "12",
+      "position_x": 5.0,
+      "position_y": 0.0,
+      "position_z": 3.0,
+      "width": 4.0,
+      "height": 4.0,
+      "depth": 2.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 9
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 58,
+    "fields": {
+      "order_id": 8,
+      "name": "25",
+      "position_x": 8.0,
+      "position_y": 4.0,
+      "position_z": 4.0,
+      "width": 1.0,
+      "height": 5.0,
+      "depth": 4.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 9
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 59,
+    "fields": {
+      "order_id": 9,
+      "name": "27",
+      "position_x": 0.0,
+      "position_y": 7.0,
+      "position_z": 0.0,
+      "width": 5.0,
+      "height": 3.0,
+      "depth": 2.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 9
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 60,
+    "fields": {
+      "order_id": 10,
+      "name": "5",
+      "position_x": 0.0,
+      "position_y": 0.0,
+      "position_z": 5.0,
+      "width": 5.0,
+      "height": 3.0,
+      "depth": 2.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 9
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 61,
+    "fields": {
+      "order_id": 11,
+      "name": "20",
+      "position_x": 9.0,
+      "position_y": 4.0,
+      "position_z": 0.0,
+      "width": 1.0,
+      "height": 5.0,
+      "depth": 5.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 9
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 62,
+    "fields": {
+      "order_id": 12,
+      "name": "30",
+      "position_x": 5.0,
+      "position_y": 7.0,
+      "position_z": 4.0,
+      "width": 3.0,
+      "height": 2.0,
+      "depth": 4.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 9
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 63,
+    "fields": {
+      "order_id": 13,
+      "name": "29",
+      "position_x": 8.0,
+      "position_y": 4.0,
+      "position_z": 8.0,
+      "width": 1.0,
+      "height": 5.0,
+      "depth": 2.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 9
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 64,
+    "fields": {
+      "order_id": 14,
+      "name": "28",
+      "position_x": 5.0,
+      "position_y": 7.0,
+      "position_z": 8.0,
+      "width": 3.0,
+      "height": 2.0,
+      "depth": 2.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 9
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 65,
+    "fields": {
+      "order_id": 15,
+      "name": "24",
+      "position_x": 0.0,
+      "position_y": 7.0,
+      "position_z": 2.0,
+      "width": 2.0,
+      "height": 1.0,
+      "depth": 5.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 9
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 66,
+    "fields": {
+      "order_id": 16,
+      "name": "23",
+      "position_x": 3.0,
+      "position_y": 5.0,
+      "position_z": 4.0,
+      "width": 1.0,
+      "height": 1.0,
+      "depth": 5.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 9
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 67,
+    "fields": {
+      "order_id": 17,
+      "name": "22",
+      "position_x": 9.0,
+      "position_y": 0.0,
+      "position_z": 3.0,
+      "width": 1.0,
+      "height": 4.0,
+      "depth": 1.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 9
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 68,
+    "fields": {
+      "order_id": 18,
+      "name": "17",
+      "position_x": 0.0,
+      "position_y": 3.0,
+      "position_z": 5.0,
+      "width": 3.0,
+      "height": 1.0,
+      "depth": 2.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 9
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 69,
+    "fields": {
+      "order_id": 19,
+      "name": "15",
+      "position_x": 9.0,
+      "position_y": 4.0,
+      "position_z": 5.0,
+      "width": 1.0,
+      "height": 5.0,
+      "depth": 3.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 9
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 70,
+    "fields": {
+      "order_id": 20,
+      "name": "13",
+      "position_x": 0.0,
+      "position_y": 0.0,
+      "position_z": 7.0,
+      "width": 5.0,
+      "height": 2.0,
+      "depth": 3.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 9
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 71,
+    "fields": {
+      "order_id": 21,
+      "name": "16",
+      "position_x": 3.0,
+      "position_y": 3.0,
+      "position_z": 5.0,
+      "width": 2.0,
+      "height": 2.0,
+      "depth": 2.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 9
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 72,
+    "fields": {
+      "order_id": 22,
+      "name": "14",
+      "position_x": 5.0,
+      "position_y": 0.0,
+      "position_z": 5.0,
+      "width": 4.0,
+      "height": 2.0,
+      "depth": 2.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 9
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 73,
+    "fields": {
+      "order_id": 23,
+      "name": "11",
+      "position_x": 9.0,
+      "position_y": 4.0,
+      "position_z": 8.0,
+      "width": 1.0,
+      "height": 4.0,
+      "depth": 1.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 9
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 74,
+    "fields": {
+      "order_id": 24,
+      "name": "10",
+      "position_x": 5.0,
+      "position_y": 0.0,
+      "position_z": 7.0,
+      "width": 4.0,
+      "height": 2.0,
+      "depth": 2.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 9
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 75,
+    "fields": {
+      "order_id": 25,
+      "name": "9",
+      "position_x": 9.0,
+      "position_y": 0.0,
+      "position_z": 4.0,
+      "width": 1.0,
+      "height": 3.0,
+      "depth": 3.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 9
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 76,
+    "fields": {
+      "order_id": 26,
+      "name": "8",
+      "position_x": 0.0,
+      "position_y": 2.0,
+      "position_z": 7.0,
+      "width": 5.0,
+      "height": 1.0,
+      "depth": 3.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 9
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 77,
+    "fields": {
+      "order_id": 27,
+      "name": "7",
+      "position_x": 2.0,
+      "position_y": 7.0,
+      "position_z": 2.0,
+      "width": 2.0,
+      "height": 3.0,
+      "depth": 1.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 9
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 78,
+    "fields": {
+      "order_id": 28,
+      "name": "4",
+      "position_x": 2.0,
+      "position_y": 7.0,
+      "position_z": 3.0,
+      "width": 2.0,
+      "height": 1.0,
+      "depth": 5.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 9
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 79,
+    "fields": {
+      "order_id": 29,
+      "name": "2",
+      "position_x": 2.0,
+      "position_y": 8.0,
+      "position_z": 3.0,
+      "width": 2.0,
+      "height": 1.0,
+      "depth": 5.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 9
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 80,
+    "fields": {
+      "order_id": 30,
+      "name": "1",
+      "position_x": 5.0,
+      "position_y": 2.0,
+      "position_z": 5.0,
+      "width": 3.0,
+      "height": 1.0,
+      "depth": 5.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 9
+    }
+  },
+  {
+    "model": "app.item",
+    "pk": 81,
+    "fields": {
+      "order_id": 1,
+      "name": "1",
+      "position_x": 0.0,
+      "position_y": 2.0,
+      "position_z": 2.0,
+      "width": 2.0,
+      "height": 2.0,
+      "depth": 2.0,
+      "face_up": false,
+      "fragile": false,
+      "task": 10
+    }
+  }
+]

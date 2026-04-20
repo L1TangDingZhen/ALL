@@ -1,0 +1,33 @@
+# Conda environment (huge, not needed - packages installed via requirements.txt)
+.conda/
+
+# Git
+.git/
+.gitignore
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+venv/
+env/
+.env
+
+# Database files (created at runtime via volume)
+*.sqlite3
+data/
+
+# IDE
+.vscode/
+.idea/
+
+# Test / coverage
+.coverage
+htmlcov/
+
+# Build artifacts
+staticfiles/
