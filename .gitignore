@@ -16,6 +16,7 @@ docker-compose.yml
 # Personal notes
 BUG.txt
 CLAUDE.md
+AGENTS.md
 
 # ─── Python ───────────────────────────────────────────────────
 __pycache__/
