@@ -4,7 +4,7 @@ using P2P.Models;
 namespace P2P.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class ConnectionDiagnosticController : ControllerBase
     {
         private readonly ILogger<ConnectionDiagnosticController> _logger;

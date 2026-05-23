@@ -5,7 +5,7 @@ using P2P.Services;
 namespace P2P.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class DeviceController : ControllerBase
     {
         private readonly UserService _userService;

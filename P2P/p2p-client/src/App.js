@@ -41,7 +41,7 @@ function App() {
   }
 
   return (
-    <Router basename="/p2p">
+    <Router>
       <Routes>
         <Route 
           path="/" 

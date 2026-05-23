@@ -5,65 +5,34 @@ using System.Collections.Concurrent;
 
 namespace P2P.Hubs
 {
-    /// <summary>
-    /// SignalR Hub for WebRTC-based P2P File Transfer
-    ///
-    /// This hub implements a signaling server for WebRTC peer connections, enabling
-    /// direct device-to-device file transfers without server-side storage.
-    ///
-    /// Key Responsibilities:
-    /// - Exchange WebRTC offer/answer/ICE candidates between peers
-    /// - Manage device registration and online presence
-    /// - Coordinate NAT traversal via STUN servers
-    /// - Handle real-time messaging during transfers
-    ///
-    /// Architecture: Once peers establish WebRTC connection, files transfer directly
-    /// between devices (P2P), reducing server bandwidth and storage requirements.
-    /// </summary>
     public class P2PHub : Hub
     {
         private readonly UserService _userService;
-
-        /// <summary>
-        /// Track WebRTC connection states between device pairs
-        /// Used for monitoring peer connection health and cleanup
-        /// </summary>
-        private static readonly ConcurrentDictionary<string, ConcurrentDictionary<string, WebRTCConnectionState>> _webRTCStates =
+        // Track WebRTC connection states between devices
+        private static readonly ConcurrentDictionary<string, ConcurrentDictionary<string, WebRTCConnectionState>> _webRTCStates = 
             new ConcurrentDictionary<string, ConcurrentDictionary<string, WebRTCConnectionState>>();
-
-        /// <summary>
-        /// STUN/TURN servers for WebRTC NAT traversal
-        /// STUN servers help discover public IP addresses behind NAT
-        /// Production deployments should add TURN servers for restricted networks
-        /// </summary>
+        // Store ice servers for WebRTC
         private readonly List<object> _iceServers = new List<object>
         {
             new { urls = "stun:stun.l.google.com:19302" },
             new { urls = "stun:stun1.l.google.com:19302" },
             new { urls = "stun:stun2.l.google.com:19302" }
-            // Production: Add TURN servers for corporate firewalls/symmetric NAT
-            // Example: new { urls = "turn:turn.example.com", username = "user", credential = "pass" }
+            // You would add TURN servers here for production
+            // Example: new { urls = "turn:turn.example.com", username = "username", credential = "password" }
         };
         
         // Timer for cleaning up stale connections
         private static Timer _cleanupTimer;
-        private static readonly object _timerLock = new object();
 
         public P2PHub(UserService userService)
         {
             _userService = userService;
-
-            // Thread-safe initialization of the cleanup timer
+            
+            // Initialize the cleanup timer if it hasn't been started yet
             if (_cleanupTimer == null)
             {
-                lock (_timerLock)
-                {
-                    if (_cleanupTimer == null)
-                    {
-                        _cleanupTimer = new Timer(CleanupStaleConnections, null, TimeSpan.Zero, TimeSpan.FromMinutes(2));
-                        Console.WriteLine("Connection cleanup timer initialized");
-                    }
-                }
+                _cleanupTimer = new Timer(CleanupStaleConnections, null, TimeSpan.Zero, TimeSpan.FromMinutes(2));
+                Console.WriteLine("Connection cleanup timer initialized");
             }
         }
         

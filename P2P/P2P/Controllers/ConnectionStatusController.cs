@@ -4,7 +4,7 @@ using System.Diagnostics;
 namespace P2P.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class ConnectionStatusController : ControllerBase
     {
         [HttpGet("health")]

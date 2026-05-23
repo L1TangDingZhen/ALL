@@ -21,6 +21,9 @@ AGENTS.md
 # Duplicate frontend copy inside backend directory
 P2P/P2P/p2p-client/
 
+# P2P sub-repo's own Dockerfile (managed in its own repo)
+P2P/Dockerfile
+
 # ─── Python ───────────────────────────────────────────────────
 __pycache__/
 *.py[cod]
@@ -49,6 +52,10 @@ node_modules/
 box/box_show/build/
 P2P/p2p-client/build/
 Student_Enroll_Grade_System/front_end/dist/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
 
 # ─── .NET ─────────────────────────────────────────────────────
 bin/

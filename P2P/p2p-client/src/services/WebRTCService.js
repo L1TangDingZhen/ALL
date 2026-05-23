@@ -1,54 +1,30 @@
 import SignalRService from './SignalRService';
 
-/**
- * WebRTC Service for Peer-to-Peer File Transfer
- *
- * Manages WebRTC peer connections and data channels for direct device-to-device
- * file transfers. Uses SignalR as the signaling channel for connection setup.
- *
- * Key Features:
- * - Direct P2P connections using WebRTC Data Channels
- * - Automatic ICE candidate exchange for NAT traversal
- * - Chunked file transfer with progress tracking
- * - Connection quality monitoring
- * - Automatic reconnection on failure
- *
- * WebRTC Flow:
- * 1. Create RTCPeerConnection with STUN servers
- * 2. Exchange SDP offer/answer via SignalR
- * 3. Exchange ICE candidates for NAT traversal
- * 4. Establish data channel for file transfer
- * 5. Transfer files in chunks (no server storage)
- */
 class WebRTCService {
   constructor() {
-    this.connections = {}; // Map of RTCPeerConnection objects by device ID
-    this.dataChannels = {}; // Map of RTCDataChannel objects for file transfer
+    this.connections = {}; // Map of peer connections by device ID
+    this.dataChannels = {}; // Map of data channels by device ID
     this.userId = null;
     this.deviceId = null;
-    this.iceServers = null; // STUN/TURN server configuration
+    this.iceServers = null;
     this.isInitialized = false;
-    this.pendingIceCandidates = {}; // Queue ICE candidates until connection ready
-    this.transferMode = 'server'; // 'p2p' when WebRTC connected, 'server' as fallback
-    this.connectionTimeouts = {}; // Track connection establishment timeouts
-    this.fileTransfers = {}; // Track outgoing file transfer state
-    this.incomingFiles = {}; // Track incoming file reception state
-    this.connectionQualityData = {}; // Monitor latency, packet loss, bandwidth
-
-    // Event handler callbacks for UI updates
+    this.pendingIceCandidates = {};
+    this.transferMode = 'server'; // Default to server relay
+    this.connectionTimeouts = {}; // Track connection timeouts
+    this.fileTransfers = {}; // Track ongoing file transfers
+    this.connectionQualityData = {}; // Track connection quality metrics
+    
+    // Event handler callbacks
     this.eventHandlers = {
       onConnectionStateChanged: null,
       onDataChannelOpen: null,
       onDataChannelClose: null,
       onDataChannelError: null,
       onTransferModeChanged: null,
-      // File transfer events
+      // Add these to support component event names
       onDataChannelMessage: null,
       onDataChannelFile: null,
-      onDataChannelFileProgress: null,
-      onFileMetadataReceived: null,
-      onFileTransferProgress: null,
-      onFileReceived: null
+      onDataChannelFileProgress: null
     };
   }
 
@@ -312,112 +288,9 @@ class WebRTCService {
               }
             } else if (jsonData.type === 'file-metadata') {
               // Handle file metadata
-              console.log('File metadata received:', jsonData.fileName, jsonData.fileSize, 'bytes');
-
-              // Initialize incoming file transfer state
-              this.incomingFiles[jsonData.transferId] = {
-                transferId: jsonData.transferId,
-                fileName: jsonData.fileName,
-                fileSize: jsonData.fileSize,
-                contentType: jsonData.contentType,
-                totalChunks: jsonData.totalChunks,
-                receivedChunks: [],
-                receivedChunkCount: 0,
-                peerId: peerId
-              };
-
-              console.log(`Initialized incoming file transfer: ${jsonData.transferId}, expecting ${jsonData.totalChunks} chunks`);
-
-              // Emit metadata received event
-              if (this.eventHandlers.onFileMetadataReceived) {
-                this.eventHandlers.onFileMetadataReceived({
-                  transferId: jsonData.transferId,
-                  fileName: jsonData.fileName,
-                  fileSize: jsonData.fileSize,
-                  contentType: jsonData.contentType,
-                  totalChunks: jsonData.totalChunks
-                });
-              }
-            } else if (jsonData.type === 'file-chunk') {
-              // Handle file chunk
-              const { transferId, chunkIndex, data } = jsonData;
-
-              if (!this.incomingFiles[transferId]) {
-                console.error('Received chunk for unknown transfer:', transferId);
-                return;
-              }
-
-              const transfer = this.incomingFiles[transferId];
-
-              // Convert base64 to ArrayBuffer if needed
-              let chunkData;
-              if (typeof data === 'string') {
-                // Base64 string
-                const binaryString = atob(data);
-                const bytes = new Uint8Array(binaryString.length);
-                for (let i = 0; i < binaryString.length; i++) {
-                  bytes[i] = binaryString.charCodeAt(i);
-                }
-                chunkData = bytes.buffer;
-              } else {
-                chunkData = data;
-              }
-
-              // Store chunk
-              transfer.receivedChunks[chunkIndex] = chunkData;
-              transfer.receivedChunkCount++;
-
-              // Calculate progress
-              const progress = Math.round((transfer.receivedChunkCount / transfer.totalChunks) * 100);
-              console.log(`File chunk ${chunkIndex + 1}/${transfer.totalChunks} received (${progress}%)`);
-
-              // Emit progress events
-              if (this.eventHandlers.onDataChannelFileProgress) {
-                this.eventHandlers.onDataChannelFileProgress(transferId, progress);
-              }
-              if (this.eventHandlers.onFileTransferProgress) {
-                this.eventHandlers.onFileTransferProgress(transferId, progress);
-              }
-            } else if (jsonData.type === 'file-complete') {
-              // Handle file transfer completion
-              const { transferId } = jsonData;
-
-              if (!this.incomingFiles[transferId]) {
-                console.error('Received completion for unknown transfer:', transferId);
-                return;
-              }
-
-              const transfer = this.incomingFiles[transferId];
-              console.log(`File transfer complete: ${transfer.fileName}, assembling file...`);
-
-              // Assemble file from chunks
-              const chunks = transfer.receivedChunks.filter(chunk => chunk !== undefined);
-              const blob = new Blob(chunks, { type: transfer.contentType || 'application/octet-stream' });
-              const url = URL.createObjectURL(blob);
-
-              const fileInfo = {
-                fileId: transferId,
-                fileName: transfer.fileName,
-                url: url,
-                blob: blob,
-                size: transfer.fileSize,
-                sender: transfer.peerId,
-                isVideo: transfer.contentType && transfer.contentType.startsWith('video/'),
-                contentType: transfer.contentType
-              };
-
-              // Emit file received events
-              if (this.eventHandlers.onDataChannelFile) {
-                this.eventHandlers.onDataChannelFile(fileInfo);
-              }
-              if (this.eventHandlers.onFileReceived) {
-                this.eventHandlers.onFileReceived(fileInfo);
-              }
-
-              console.log(`File ${transfer.fileName} ready for download`);
-
-              // Clean up
-              delete this.incomingFiles[transferId];
+              console.log('File metadata received:', jsonData.fileName);
+              // Create file transfer state
+              // Further implementation would handle this
             }
           } catch (e) {
             // Not JSON, treat as plain text
@@ -429,11 +302,10 @@ class WebRTCService {
               });
             }
           }
-        } else if (event.data instanceof ArrayBuffer || event.data instanceof Blob) {
-          // Binary message - could be file data
-          console.log('Binary data received, length:', event.data.byteLength || event.data.size);
-          // We're using JSON for file chunks now, so this shouldn't be reached
-          console.warn('Unexpected binary data received. File chunks should be sent as JSON.');
+        } else {
+          // Binary message - likely file data
+          console.log('Binary data received, length:', event.data.byteLength);
+          // Implementation would handle file chunks
         }
       } catch (error) {
         console.error('Error processing received message:', error);
@@ -805,37 +677,37 @@ class WebRTCService {
   // Test STUN connectivity
   async testStunConnectivity() {
     return new Promise(resolve => {
-      let resolved = false;
-      let pc;
-      const done = (result) => {
-        if (resolved) return;
-        resolved = true;
-        resolve(result);
-        try { pc.close(); } catch (e) {}
-      };
-
       try {
-        pc = new RTCPeerConnection({
+        const pc = new RTCPeerConnection({
           iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
         });
-
+        
         let stunDetected = false;
-
+        
         pc.onicecandidate = (event) => {
           if (event.candidate) {
             if (event.candidate.candidate.indexOf('srflx') !== -1) {
               stunDetected = true;
             }
           } else {
-            done(stunDetected);
+            // ICE gathering complete
+            resolve(stunDetected);
+            pc.close();
           }
         };
-
+        
+        // Create data channel to trigger ICE gathering
         pc.createDataChannel('stun-test');
         pc.createOffer().then(offer => pc.setLocalDescription(offer));
-
-        setTimeout(() => done(false), 5000);
-
+        
+        // Timeout after 5 seconds
+        setTimeout(() => {
+          if (pc.iceGatheringState !== 'complete') {
+            resolve(false);
+            pc.close();
+          }
+        }, 5000);
+        
       } catch (error) {
         console.error('STUN test error:', error);
         resolve(false);
@@ -846,46 +718,47 @@ class WebRTCService {
   // Test TURN connectivity
   async testTurnConnectivity() {
     return new Promise(resolve => {
-      let resolved = false;
-      let pc;
-      const done = (result) => {
-        if (resolved) return;
-        resolved = true;
-        resolve(result);
-        try { pc.close(); } catch (e) {}
-      };
-
       try {
-        const turnServer = this.iceServers.find(server =>
-          typeof server.urls === 'string' ? server.urls.startsWith('turn:') :
+        // Find a TURN server in our configuration
+        const turnServer = this.iceServers.find(server => 
+          typeof server.urls === 'string' ? server.urls.startsWith('turn:') : 
           server.urls.some(url => url.startsWith('turn:')));
-
+          
         if (!turnServer) {
           resolve(false);
           return;
         }
-
-        pc = new RTCPeerConnection({
+        
+        const pc = new RTCPeerConnection({
           iceServers: [turnServer]
         });
-
+        
         let turnDetected = false;
-
+        
         pc.onicecandidate = (event) => {
           if (event.candidate) {
             if (event.candidate.candidate.indexOf('relay') !== -1) {
               turnDetected = true;
             }
           } else {
-            done(turnDetected);
+            // ICE gathering complete
+            resolve(turnDetected);
+            pc.close();
           }
         };
-
+        
+        // Create data channel to trigger ICE gathering
         pc.createDataChannel('turn-test');
         pc.createOffer().then(offer => pc.setLocalDescription(offer));
-
-        setTimeout(() => done(false), 5000);
-
+        
+        // Timeout after 5 seconds
+        setTimeout(() => {
+          if (pc.iceGatheringState !== 'complete') {
+            resolve(false);
+            pc.close();
+          }
+        }, 5000);
+        
       } catch (error) {
         console.error('TURN test error:', error);
         resolve(false);
@@ -917,43 +790,43 @@ class WebRTCService {
   startConnectionQualityMonitoring(peerId) {
     const peerConnection = this.connections[peerId];
     if (!peerConnection) return;
-
-    // Clean up previous monitor if exists
-    if (this.connectionQualityData[peerId] && this.connectionQualityData[peerId].monitorInterval) {
-      clearInterval(this.connectionQualityData[peerId].monitorInterval);
-    }
-
+    
     const monitorInterval = setInterval(() => {
-      if (!peerConnection || peerConnection.connectionState !== 'connected') {
-        clearInterval(monitorInterval);
-        return;
-      }
-
-      peerConnection.getStats(null).then(stats => {
-        let quality = {
-          timestamp: Date.now(),
-          rtt: null,
-          bytesSent: 0,
-          bytesReceived: 0,
-          monitorInterval: monitorInterval  // Preserve interval ref
-        };
-
-        stats.forEach(report => {
-          if (report.type === 'transport') {
-            if (report.currentRoundTripTime) {
-              quality.rtt = report.currentRoundTripTime * 1000;
+      if (peerConnection.connectionState === 'connected') {
+        peerConnection.getStats(null).then(stats => {
+          let quality = {
+            timestamp: Date.now(),
+            rtt: null,
+            bytesSent: 0,
+            bytesReceived: 0
+          };
+          
+          stats.forEach(report => {
+            if (report.type === 'transport') {
+              if (report.currentRoundTripTime) {
+                quality.rtt = report.currentRoundTripTime * 1000; // Convert to ms
+                console.log(`Connection quality for ${peerId} - RTT: ${quality.rtt}ms`);
+              }
+              
+              if (report.bytesSent) quality.bytesSent = report.bytesSent;
+              if (report.bytesReceived) quality.bytesReceived = report.bytesReceived;
             }
-            if (report.bytesSent) quality.bytesSent = report.bytesSent;
-            if (report.bytesReceived) quality.bytesReceived = report.bytesReceived;
+          });
+          
+          this.connectionQualityData[peerId] = quality;
+          
+          // Adapt to network conditions if needed
+          if (quality.rtt && quality.rtt > 500) {
+            console.log('High latency detected, adapting transmission rate');
+            // Implementation would adjust chunk size or transmission rate
           }
         });
-
-        this.connectionQualityData[peerId] = quality;
-      }).catch(() => {
+      } else {
         clearInterval(monitorInterval);
-      });
+      }
     }, 5000);
-
+    
+    // Store the interval ID for cleanup
     this.connectionQualityData[peerId] = { monitorInterval };
   }
 }
@@ -1029,32 +902,37 @@ webRTCService.sendFile = function(file, onProgress) {
     const transferId = `file_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
     
     // Calculate optimal chunk size based on file type and network quality
-    let chunkSize = 256 * 1024; // Default 256 KB chunks (optimized for throughput)
-
-    // Adjust chunk size for network quality
+    let chunkSize = 16384; // Default 16 KB chunks
+    
+    // Adjust chunk size for video files
+    const isVideo = file.type.startsWith('video/');
+    const isLargeFile = file.size > 50 * 1024 * 1024; // 50MB
     const connectionQuality = this.connectionQualityData[peerId];
-    if (connectionQuality && connectionQuality.rtt && connectionQuality.rtt > 300) {
-      chunkSize = 128 * 1024; // 128KB for high latency connections
+    
+    if (isVideo || isLargeFile) {
+      // Optimize for larger chunks to improve throughput for large files
+      // but not too large to cause UI freezing
+      chunkSize = 64 * 1024; // 64KB for videos and large files
+      
+      // If we have connection quality data and RTT is high, use smaller chunks
+      if (connectionQuality && connectionQuality.rtt && connectionQuality.rtt > 200) {
+        chunkSize = 32 * 1024; // 32KB for high latency connections
+      }
     }
     
-    // Calculate total chunks
-    const totalChunks = Math.ceil(file.size / chunkSize);
-
     // Send file metadata with information useful for streaming
     const metadataPacket = {
       type: 'file-metadata',
       transferId: transferId,
       fileName: file.name,
       fileType: file.type,
-      contentType: file.type,
       fileSize: file.size,
       chunkSize: chunkSize,
-      totalChunks: totalChunks,
-      isStreamable: file.type.startsWith('video/'),
+      isStreamable: isVideo,
       timestamp: new Date().toISOString()
     };
-
-    console.log(`Starting file transfer: ${file.name} (${file.size} bytes) with ${chunkSize}B chunks, ${totalChunks} total chunks`);
+    
+    console.log(`Starting file transfer: ${file.name} (${file.size} bytes) with ${chunkSize}B chunks`);
     dataChannel.send(JSON.stringify(metadataPacket));
     
     // Store file transfer state
@@ -1064,23 +942,16 @@ webRTCService.sendFile = function(file, onProgress) {
       startTime: Date.now(),
       peerId: peerId,
       chunkSize: chunkSize,
-      totalChunks: totalChunks,
-      sentChunkCount: 0, // Track actually sent chunks for accurate progress
-      onProgress: onProgress, // Store callback for progress updates
       canceled: false,
       worker: null,
       sendQueue: [],
       inFlightChunks: 0,
-      maxConcurrentChunks: 8 // Allow sending multiple chunks in parallel (optimized for higher throughput)
+      maxConcurrentChunks: 3 // Allow sending multiple chunks in parallel
     };
     
     // Create a web worker for file processing
-    // Detect base path from the current URL pathname
-    // If URL is /p2p/something, extract /p2p as basePath
-    const currentPath = window.location.pathname;
-    const basePath = currentPath.startsWith('/p2p') ? '/p2p' : '';
     const workerBlob = new Blob([
-      `importScripts('${window.location.origin}${basePath}/services/FileTransferWorker.js');`
+      `importScripts('${window.location.origin}/services/FileTransferWorker.js');`
     ], { type: 'application/javascript' });
     
     const worker = new Worker(URL.createObjectURL(workerBlob));
@@ -1097,8 +968,17 @@ webRTCService.sendFile = function(file, onProgress) {
       
       switch (action) {
         case 'progress_update':
-          // Don't use worker progress directly, we'll calculate based on actual sends
-          // Just store for reference
+          // Update progress
+          this.fileTransfers[transferId].progress = data.progress;
+          if (onProgress) {
+            onProgress({
+              transferId,
+              fileName: file.name,
+              progress: data.progress,
+              sent: Math.floor((file.size * data.progress) / 100),
+              total: file.size
+            });
+          }
           break;
           
         case 'chunk_ready':
@@ -1106,7 +986,6 @@ webRTCService.sendFile = function(file, onProgress) {
           this.fileTransfers[transferId].sendQueue.push({
             index: data.chunkIndex,
             data: data.chunk,
-            totalChunks: data.totalChunks,
             isFinal: data.isFinal
           });
           this.processSendQueue(transferId);
@@ -1149,70 +1028,36 @@ webRTCService.processSendQueue = function(transferId) {
   const dataChannel = this.dataChannels[transfer.peerId];
   if (!dataChannel || dataChannel.readyState !== 'open') return;
   
-  // Fast Base64 encoding (O(n) instead of O(n²) string concatenation)
-  const arrayBufferToBase64 = (buffer) => {
-    const bytes = new Uint8Array(buffer);
-    const chunkSize = 8192;
-    let binary = '';
-    for (let i = 0; i < bytes.length; i += chunkSize) {
-      const slice = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
-      binary += String.fromCharCode.apply(null, slice);
-    }
-    return btoa(binary);
-  };
-
-  // Set up bufferedAmountLow event for flow control (only once per channel)
-  const BUFFER_LOW_THRESHOLD = 512 * 1024; // 512KB
-  const BUFFER_HIGH_THRESHOLD = 2 * 1024 * 1024; // 2MB
-  if (!dataChannel._bufferedAmountLowSetup) {
-    dataChannel.bufferedAmountLowThreshold = BUFFER_LOW_THRESHOLD;
-    dataChannel.onbufferedamountlow = () => {
-      // Resume all transfers on this channel
-      Object.keys(this.fileTransfers).forEach(tid => {
-        const t = this.fileTransfers[tid];
-        if (t && !t.canceled && t.peerId === transfer.peerId && t.sendQueue.length > 0) {
-          this.processSendQueue(tid);
-        }
-      });
-    };
-    dataChannel._bufferedAmountLowSetup = true;
-  }
-
-  // Send chunks as fast as the data channel allows
-  while (transfer.sendQueue.length > 0 && dataChannel.bufferedAmount < BUFFER_HIGH_THRESHOLD) {
+  // Check datachannel buffering to prevent overwhelming it
+  const isChannelCongested = dataChannel.bufferedAmount > 1024 * 1024; // 1MB threshold
+  
+  // Process chunks if channel is not congested and we have chunks to send
+  while (!isChannelCongested && 
+         transfer.sendQueue.length > 0 && 
+         transfer.inFlightChunks < transfer.maxConcurrentChunks) {
+    
     const chunk = transfer.sendQueue.shift();
-
+    transfer.inFlightChunks++;
+    
     try {
-      let chunkData = chunk.data;
+      // For binary data
       if (chunk.data instanceof ArrayBuffer) {
-        chunkData = arrayBufferToBase64(chunk.data);
+        dataChannel.send(chunk.data);
+      } else {
+        // For base64 encoded data (should not happen in WebRTC mode)
+        const chunkPacket = {
+          type: 'file-chunk',
+          transferId: transferId,
+          chunkIndex: chunk.index,
+          data: chunk.data
+        };
+        dataChannel.send(JSON.stringify(chunkPacket));
       }
-
-      const chunkPacket = {
-        type: 'file-chunk',
-        transferId: transferId,
-        chunkIndex: chunk.index,
-        totalChunks: chunk.totalChunks,
-        data: chunkData
-      };
-      dataChannel.send(JSON.stringify(chunkPacket));
-
-      transfer.sentChunkCount++;
-      const sendProgress = Math.round((transfer.sentChunkCount / transfer.totalChunks) * 100);
-      transfer.progress = sendProgress;
-
-      if (transfer.onProgress) {
-        transfer.onProgress({
-          transferId,
-          fileName: transfer.file.name,
-          progress: sendProgress,
-          sent: Math.floor((transfer.file.size * sendProgress) / 100),
-          total: transfer.file.size
-        });
-      }
-
+      
+      // If this is the final chunk
       if (chunk.isFinal) {
         setTimeout(() => {
+          // Send transfer complete notification
           const completePacket = {
             type: 'file-complete',
             transferId: transferId,
@@ -1220,19 +1065,35 @@ webRTCService.processSendQueue = function(transferId) {
           };
           dataChannel.send(JSON.stringify(completePacket));
           console.log(`File transfer complete: ${transfer.file.name}`);
-
+          
+          // Clean up
           if (transfer.worker) {
             transfer.worker.terminate();
           }
           delete this.fileTransfers[transferId];
-        }, 100);
+        }, 100); // Small delay to ensure all chunks are processed
       }
-
+      
+      // Decrease in-flight count after successful send
+      transfer.inFlightChunks--;
+      
+      // Continue processing queue if there are more chunks
+      if (transfer.sendQueue.length > 0) {
+        // Use requestAnimationFrame to avoid blocking UI
+        requestAnimationFrame(() => this.processSendQueue(transferId));
+      }
+      
     } catch (error) {
       console.error('Error sending chunk:', error);
+      transfer.inFlightChunks--;
     }
   }
-  // If buffer is full, bufferedAmountLow event will resume sending automatically
+  
+  // If channel is congested, wait and try again
+  if (isChannelCongested) {
+    console.log('DataChannel congested, throttling send rate');
+    setTimeout(() => this.processSendQueue(transferId), 100);
+  }
 };
 
 webRTCService.cancelFileTransfer = function(transferId) {

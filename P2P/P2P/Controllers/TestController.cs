@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace P2P.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class TestController : ControllerBase
     {
         private readonly UserService _userService;

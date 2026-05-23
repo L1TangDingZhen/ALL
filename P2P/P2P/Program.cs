@@ -40,11 +40,7 @@ namespace P2P
                 options.EnableDetailedErrors = true; // 启用详细错误信息
             });
 
-            builder.Services.AddControllers(options =>
-            {
-                // 添加路由前缀 - 这将使所有控制器的路由都添加api/p2p前缀
-                options.UseCentralRoutePrefix(new Microsoft.AspNetCore.Mvc.RouteAttribute("api/p2p"));
-            });
+            builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();

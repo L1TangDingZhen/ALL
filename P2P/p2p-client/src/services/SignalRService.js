@@ -78,7 +78,6 @@ class SignalRService {
     this.connectionPromise = this.connection.start()
       .then(() => {
         console.log('SignalR connected!');
-        this.reconnectAttempts = 0; // Reset on successful connection
         this.connection.onclose(error => {
           console.log('SignalR connection closed', error);
           this.connectionPromise = null;

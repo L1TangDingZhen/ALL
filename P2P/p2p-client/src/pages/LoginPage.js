@@ -2,37 +2,23 @@ import React, { useState } from 'react';
 import { Container, Row, Col, Card, Button, Form, Alert } from 'react-bootstrap';
 import AuthService from '../services/AuthService';
 
-const friendlyError = (error) => {
-  const msg = error.message || '';
-  if (msg.includes('404') || msg.toLowerCase().includes('not found'))
-    return 'Invitation code not found or already used.';
-  if (msg.includes('400') || msg.toLowerCase().includes('invalid'))
-    return 'Invalid invitation code format.';
-  if (msg.toLowerCase().includes('network') || msg.toLowerCase().includes('failed to fetch'))
-    return 'Network error. Please check your connection and try again.';
-  if (msg.toLowerCase().includes('authentication failed'))
-    return 'Incorrect invitation code. Please try again.';
-  return 'Connection failed. Please try again.';
-};
-
 const LoginPage = ({ onLogin }) => {
   const [invitationCode, setInvitationCode] = useState('');
   const [generatedCode, setGeneratedCode] = useState('');
   const [showGeneratedCode, setShowGeneratedCode] = useState(false);
-  const [codeError, setCodeError] = useState('');
-  const [globalError, setGlobalError] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleGenerateCode = async () => {
     try {
       setIsLoading(true);
-      setGlobalError('');
+      setErrorMessage('');
       const response = await AuthService.generateInvitationCode();
       setGeneratedCode(response.invitationCode);
       setShowGeneratedCode(true);
-
+      
       console.log('Generated invitation code:', response.invitationCode);
-
+      
       // 短暂延迟后自动登录，确保后端有足够时间处理
       setTimeout(async () => {
         try {
@@ -40,44 +26,45 @@ const LoginPage = ({ onLogin }) => {
           const authResponse = await AuthService.authenticateWithCode(response.invitationCode);
           if (authResponse.success) {
             console.log('Auto-login successful:', authResponse);
+            // 将邀请码添加到认证响应中，以便在传输页面显示
             authResponse.invitationCode = response.invitationCode;
             onLogin(authResponse);
           } else {
             console.error('Auto-login failed:', authResponse);
-            setGlobalError('Auto-login failed. Please try entering the code manually.');
+            setErrorMessage(authResponse.message || 'Auto-login failed');
           }
         } catch (autoLoginError) {
           console.error('Auto-login error:', autoLoginError);
-          setGlobalError('Auto-login failed. Please try entering the code manually.');
+          setErrorMessage(autoLoginError.message || 'Auto-login failed');
           setIsLoading(false);
         }
-      }, 500);
+      }, 500); // 500ms延迟
     } catch (error) {
       console.error('Generate code error:', error);
-      setGlobalError('Failed to generate invitation code. Please try again.');
+      setErrorMessage(error.message || 'Failed to generate invitation code');
       setIsLoading(false);
     }
   };
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
+    
     if (!invitationCode.trim()) {
-      setCodeError('Please enter an invitation code.');
+      setErrorMessage('Please enter an invitation code');
       return;
     }
 
     try {
       setIsLoading(true);
-      setCodeError('');
-      setGlobalError('');
+      setErrorMessage('');
       const response = await AuthService.authenticateWithCode(invitationCode);
       if (response.success) {
+        // 将邀请码添加到响应中
         response.invitationCode = invitationCode.trim();
         onLogin(response);
       }
     } catch (error) {
-      setCodeError(friendlyError(error));
+      setErrorMessage(error.message || 'Authentication failed');
     } finally {
       setIsLoading(false);
     }
@@ -86,26 +73,26 @@ const LoginPage = ({ onLogin }) => {
   return (
     <Container className="mt-5">
       <h1 className="text-center mb-4">P2P File Transfer</h1>
-
-      {globalError && (
-        <Alert variant="danger" onClose={() => setGlobalError('')} dismissible>
-          {globalError}
+      
+      {errorMessage && (
+        <Alert variant="danger" onClose={() => setErrorMessage('')} dismissible>
+          {errorMessage}
         </Alert>
       )}
-
+      
       <Row>
         <Col md={6} className="mb-4">
           <Card>
             <Card.Header>Generate Invitation Code</Card.Header>
             <Card.Body>
-              <Button
-                variant="primary"
-                onClick={handleGenerateCode}
+              <Button 
+                variant="primary" 
+                onClick={handleGenerateCode} 
                 disabled={isLoading}
               >
                 {isLoading ? 'Generating...' : 'Generate New Code'}
               </Button>
-
+              
               {showGeneratedCode && (
                 <div className="mt-3">
                   <Alert variant="success">
@@ -117,7 +104,7 @@ const LoginPage = ({ onLogin }) => {
             </Card.Body>
           </Card>
         </Col>
-
+        
         <Col md={6} className="mb-4">
           <Card>
             <Card.Header>Use Invitation Code</Card.Header>
@@ -128,21 +115,14 @@ const LoginPage = ({ onLogin }) => {
                   <Form.Control
                     type="text"
                     value={invitationCode}
-                    onChange={(e) => {
-                      setInvitationCode(e.target.value);
-                      if (codeError) setCodeError('');
-                    }}
+                    onChange={(e) => setInvitationCode(e.target.value)}
                     placeholder="XXXXXXXX"
                     disabled={isLoading}
-                    isInvalid={!!codeError}
                   />
-                  <Form.Control.Feedback type="invalid">
-                    {codeError}
-                  </Form.Control.Feedback>
                 </Form.Group>
-                <Button
-                  variant="primary"
-                  type="submit"
+                <Button 
+                  variant="primary" 
+                  type="submit" 
                   disabled={isLoading}
                 >
                   {isLoading ? 'Connecting...' : 'Connect'}
