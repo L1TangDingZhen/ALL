@@ -20,6 +20,7 @@ WORKDIR /app
 COPY P2P/p2p-client/package*.json ./
 RUN npm ci
 COPY P2P/p2p-client/ ./
+ENV PUBLIC_URL=/p2p
 ENV REACT_APP_API_URL=""
 ENV REACT_APP_API_PATH=/api/p2p
 ENV GENERATE_SOURCEMAP=false
