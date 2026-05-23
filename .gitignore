@@ -18,6 +18,9 @@ BUG.txt
 CLAUDE.md
 AGENTS.md
 
+# Duplicate frontend copy inside backend directory
+P2P/P2P/p2p-client/
+
 # ─── Python ───────────────────────────────────────────────────
 __pycache__/
 *.py[cod]
