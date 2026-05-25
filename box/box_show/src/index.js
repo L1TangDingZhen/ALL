@@ -17,7 +17,7 @@ import AlgorithmUpload from './box/algorithm';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   // <React.StrictMode>
-    <Router basename="/box">
+    <Router basename={process.env.PUBLIC_URL}>
       <Routes>
         {/* 根路径，加载 Box 组件 */}
         {/* <Route path="/" element={<Box />} /> */}

@@ -9,6 +9,7 @@ WORKDIR /app
 COPY box/box_show/package*.json ./
 RUN npm ci
 COPY box/box_show/ ./
+ENV PUBLIC_URL=/box
 ENV REACT_APP_API_URL=""
 ENV REACT_APP_API_PATH=/api/box
 ENV GENERATE_SOURCEMAP=false
