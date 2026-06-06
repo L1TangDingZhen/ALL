@@ -4,12 +4,12 @@
  * 生产环境使用当前页面的origin
  */
 export const getApiBaseUrl = () => {
-    // 如果环境变量有值，使用它
-    if (process.env.REACT_APP_API_URL) {
+    // 显式设置了环境变量（包括空字符串=用相对路径走 nginx 反代）
+    if (process.env.REACT_APP_API_URL !== undefined) {
         return process.env.REACT_APP_API_URL;
     }
-    
-    // 否则使用当前页面的origin
+
+    // 未设置时的回退：用当前页面的 origin
     return window.location.origin;
 };
 
